@@ -1,20 +1,30 @@
-import { Fragment } from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import SignIn from "../pages/SignIn";
-import SignUp from "../pages/SignUp";
+import { Suspense } from "react";
+import { BrowserRouter, Route, Routes as RoutesRouter } from "react-router-dom";
+import NotFound from "src/pages/NotFound";
 
+import Content from "../components/Content";
+import Loader from "../components/Loader";
+import UserRoute from "./UserRoute";
 
-const RoutesApp = () => {
-    return (
-        <BrowserRouter>
-        <Fragment>
-            <Routes>
-                <Route path="/" element = {<SignIn />} />
-                <Route path="/signup" element = {<SignUp />} />
-            </Routes>
-        </Fragment>
-        </BrowserRouter>
-    );
+import PainelRoutes from "./painelRoutes";
+import SiteRoutes from "./siteRoutes";
+
+function Routes() {
+  return (
+    <BrowserRouter>
+      <Suspense fallback={<Loader open />}>
+        <RoutesRouter>
+          <Route path="/" element={<Content />}>
+            {SiteRoutes}
+          </Route>
+          <Route path="/painel" element={<UserRoute />}>
+            {PainelRoutes}
+          </Route>
+          <Route path="*" element={<NotFound />} />
+        </RoutesRouter>
+      </Suspense>
+    </BrowserRouter>
+  );
 }
 
-export default RoutesApp
+export default Routes;

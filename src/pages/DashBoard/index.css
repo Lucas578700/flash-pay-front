@@ -1,0 +1,83 @@
+.agendamento-sala-titulo-principal {
+  background-color: #0e778f;
+  padding: 17px;
+  display: block;
+  border-radius: 15px;
+}
+.agendamento-sala-titulo-principal h1 {
+  font-size: 40px;
+  font-weight: bold;
+  color: #fff;
+}
+.div-agendamento-pai-das-caixinhas {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+.div-agendamento-sala-caixinhas {
+  width: 234px;
+  margin: 0 0.2rem 20px;
+}
+.div-agendamento-sala-caixinhas h1 {
+  text-align: center;
+  color: #fff;
+  margin: 0;
+}
+.div-agendamento-sala-caixinhas h2 {
+  text-align: center;
+  color: #fff;
+  margin: 0;
+}
+.div-agendamento-sala-titulo {
+  background-color: #0e778f;
+  border-radius: 10px 10px 0 0;
+}
+.div-agendamento-sala-titulo h1 {
+  font-size: 25px;
+  padding: 10px 10px 0;
+}
+.div-agendamento-sala-titulo h2 {
+  font-size: 20px;
+  padding: 5px 10px;
+}
+.div-agendamento-sala-especificoes {
+  background-color: #132c3b;
+  margin: 0;
+  border-radius: 0 0 10px 10px;
+  padding: 10px;
+}
+.div-agendamento-sala-especificoes div {
+  background-color: #5d7583;
+  margin: 10px;
+  text-align: center;
+  color: #fff;
+  border-radius: 10px;
+}
+.div-agendamento-sala-especificoes p:first-child {
+  margin-top: 0;
+}
+#div-agendamento-sala-equipamentos {
+  display: flex;
+  background-color: #132c3b;
+  flex-direction: column;
+}
+.div-agendamento-sala-equipamentos-p1 {
+  padding: 5px 0 0 5px;
+  margin: 0;
+  border-radius: 10px 10px 0 0;
+  background-color: rgb(22, 175, 175);
+}
+#div-agendamento-sala-equipamentos p:last-child {
+  background-color: #fff;
+  color: black;
+  height: 100%;
+  margin: 0;
+  border-radius: 0 0 10px 10px;
+}
+.div-agendamento-sala-equipamentos-lista {
+  margin: 0;
+}
+.div-agendamento-sala-equipamentos-p1:nth-child(2n) {
+  background-color: blue;
+}
