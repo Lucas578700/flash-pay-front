@@ -34,7 +34,7 @@ max-width: 100%;
 `
 
 export const Button = styled.button`
-  background: linear-gradient(90deg, rgba(173,17,176,1) 20%, rgba(81,37,176,1) 60%, rgba(24,83,169,1) 100%);
+  background: linear-gradient(90deg, #5125b0 20%, #535bf2 60%, rgba(24, 83, 169, 1) 100%);
   color: white;
   padding: 13px 90px;
   border: none;
