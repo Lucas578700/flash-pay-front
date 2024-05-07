@@ -1,5 +1,5 @@
 .agendamento-sala-titulo-principal {
-  background-color: #0e778f;
+  background: linear-gradient(90deg, #5125b0 20%, #535bf2 60%, rgba(24, 83, 169, 1) 100%);
   padding: 17px;
   display: block;
   border-radius: 15px;

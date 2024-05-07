@@ -23,8 +23,8 @@ export const Content = styled.div`
   border-radius: 5px;
 `;
 
-export const Logo = styled.img`
-width: 42%;
+export const img = styled.img`
+width: 30%;
 `;
 
 export const Input = styled.input`
@@ -86,4 +86,6 @@ margin-bottom: 100px;
 font-weight: 600;
 font-family: 'Krona one', sans-serif;
 `;
+
+
 

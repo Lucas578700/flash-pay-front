@@ -1,6 +1,6 @@
 export const COLORS = {
   main: {
-    hex: "#0E778F",
+    hex: "#5125b0",
     rgb: [14, 119, 143],
   },
   error: {

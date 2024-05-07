@@ -15,6 +15,7 @@ import useAPIError from "src/hooks/useAPIError";
 import LoginSchema from "src/schemas/LoginSchema";
 import { useAuth } from "../../hooks/AuthContext";
 import { Colors } from "../../utils/colors";
+ import Logo from "../../assets/logo.png";
 
 const SignIn = () => {
   const { user, loading, signIn } = useAuth();
@@ -53,18 +54,21 @@ const SignIn = () => {
   }, [user, loading, navigate]);
 
   return (
-    <Container maxWidth="xl" sx={{ paddingTop: 16 }}>
+    <Container maxWidth="xl" sx={{ paddingTop: 8 }}>
       <Box
         sx={{
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
         }}>
+
+        
+        <img src={Logo} width={130} alt="Logo Flash Pay" />
         <Typography variant="h4" color="primary">
-          Entrar no sistema
+          Flash Pay
         </Typography>
-        <Typography variant="subtitle2" color="primary">
-          Login de acesso restrito
+        <Typography variant="subtitle2" color="primary"> 
+          Acesse sua conta
         </Typography>
         <Paper
           elevation={2}

@@ -12,7 +12,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 
-import logo from "../../assets/images/logo-home2.png";
+import logo from "../../assets/logo.png";
 import { useAuth } from "../../hooks/AuthContext";
 
 const Appbar = () => {
@@ -48,7 +48,7 @@ const Appbar = () => {
         <Toolbar disableGutters>
           <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center" }}>
             <Button onClick={irHome}>
-              <img style={{ width: 140 }} src={logo} alt="logo" />
+              <img style={{ width: 70 }} src={logo} alt="logo" />
             </Button>
           </Box>
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
