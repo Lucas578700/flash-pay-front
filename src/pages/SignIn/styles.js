@@ -87,5 +87,15 @@ font-weight: 600;
 font-family: 'Krona one', sans-serif;
 `;
 
+export const Title2 = styled.label`
+    margin: 0;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 600;
+    font-size: 45px !important;
+    line-height: 1.235;
+    letter-spacing: 0.00735em;
+    color: #5125b0;
+`;
+
 
 

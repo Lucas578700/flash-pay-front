@@ -15,7 +15,7 @@ import useAPIError from "src/hooks/useAPIError";
 import LoginSchema from "src/schemas/LoginSchema";
 import { useAuth } from "../../hooks/AuthContext";
 import { Colors } from "../../utils/colors";
- import Logo from "../../assets/logo.png";
+import { Title2 } from "./styles";
 
 const SignIn = () => {
   const { user, loading, signIn } = useAuth();
@@ -63,10 +63,10 @@ const SignIn = () => {
         }}>
 
         
-        <img src={Logo} width={130} alt="Logo Flash Pay" />
-        <Typography variant="h4" color="primary">
+        
+        <Title2 variant="h4" color="primary">
           Flash Pay
-        </Typography>
+        </Title2>
         <Typography variant="subtitle2" color="primary"> 
           Acesse sua conta
         </Typography>
