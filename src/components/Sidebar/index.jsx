@@ -8,7 +8,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import AMFIcon from "../../assets/images/amf_white.png";
+import AMFIcon from "../../assets/logo.png";
 import { AMFIconImage, Drawer, TextoAMF } from "./styles";
 
 function Sidebar({ open, onOpen, onClose }) {
@@ -20,6 +20,9 @@ function Sidebar({ open, onOpen, onClose }) {
   const irListaProduto = () => {
     navigate("/painel/produto");
   };
+  const irListaUniversidade = () => {
+    navigate("/painel/universidade");
+  };
 
   const t = useMediaQuery(theme.breakpoints.up("sm"));
   return (
@@ -28,9 +31,9 @@ function Sidebar({ open, onOpen, onClose }) {
       open={open}
       onOpen={onOpen}
       onClose={onClose}>
-      <AMFIconImage src={AMFIcon} alt="Logo AMF" onClick={irSalasHoje} />
+      <AMFIconImage src={AMFIcon} alt="Logo FlashPAY" onClick={irSalasHoje} />
       <TextoAMF align="center" variant="h6" onClick={irSalasHoje}>
-        Antonio Meneghetti <br /> Faculdade
+        Flash Pay
       </TextoAMF>
       <List>
         <ListItem button onClick={irSalasHoje}>
@@ -47,6 +50,14 @@ function Sidebar({ open, onOpen, onClose }) {
           </svg>
           <ListItemText
             primary="Início"
+            style={{ color: "#fff", marginLeft: 20 }}
+          />
+        </ListItem>
+        <ListItem button onClick={irListaUniversidade}>
+          <LocalLibraryIcon style={{ color: "#fff", fontSize: 28 }} />
+
+          <ListItemText
+            primary="Universidades"
             style={{ color: "#fff", marginLeft: 20 }}
           />
         </ListItem>

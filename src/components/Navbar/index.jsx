@@ -46,7 +46,7 @@ function NavBar({ toogleDrawer, open }) {
           flexGrow: 1, // Adicionado para ocupar o espaço restante à direita
         }}>
         <Typography variant="h6" noWrap sx={{ mr: 6, ml: 8 }}>
-          AMF
+          FLASHPAY
         </Typography>
 
         <IconButton

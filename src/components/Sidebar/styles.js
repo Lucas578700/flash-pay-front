@@ -10,7 +10,7 @@ const Drawer = styled(
     marginTop: 60,
     height: "calc(100% - 60px)",
     background:
-      "linear-gradient(180deg, #0E778F 60%, rgba(0, 0, 0, 0.1305) 90%), rgba(0, 0, 0, 0.87)",
+      "linear-gradient(180deg, #5125b0 60%, rgba(0, 0, 0, 0.1305) 90%), rgba(0, 0, 0, 0.87)",
     position: "relative",
     whiteSpace: "nowrap",
     width: 220,
