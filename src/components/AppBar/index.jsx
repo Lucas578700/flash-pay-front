@@ -95,7 +95,7 @@ const Appbar = () => {
               ))}
             </Menu>
           </Box>
-          {/* <Box sx={{ flexGrow: 0 }}>
+          <Box sx={{ flexGrow: 0 }}>
             {user ? (
               <Button onClick={irPainel} color="inherit">
                 Painel
@@ -105,7 +105,7 @@ const Appbar = () => {
                 Login
               </Button>
             )}
-          </Box> */}
+          </Box>
         </Toolbar>
       </Container>
     </AppBar>
