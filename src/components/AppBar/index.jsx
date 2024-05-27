@@ -46,12 +46,12 @@ const Appbar = () => {
     <AppBar position="absolute">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center" }}>
+          {/* <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center" }}>
             <Button onClick={irHome}>
               <img style={{ width: 70 }} src={logo} alt="logo" />
             </Button>
-          </Box>
-          <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
+          </Box> */}
+          {/* <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
             {pages.map(page => (
               <Button
                 key={page}
@@ -60,7 +60,7 @@ const Appbar = () => {
                 {page}
               </Button>
             ))}
-          </Box>
+          </Box> */}
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
             <IconButton
               size="large"
@@ -95,7 +95,7 @@ const Appbar = () => {
               ))}
             </Menu>
           </Box>
-          <Box sx={{ flexGrow: 0 }}>
+          {/* <Box sx={{ flexGrow: 0 }}>
             {user ? (
               <Button onClick={irPainel} color="inherit">
                 Painel
@@ -105,7 +105,7 @@ const Appbar = () => {
                 Login
               </Button>
             )}
-          </Box>
+          </Box> */}
         </Toolbar>
       </Container>
     </AppBar>

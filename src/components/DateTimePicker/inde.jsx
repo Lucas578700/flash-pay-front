@@ -28,4 +28,6 @@ const DateTimePickerComponent = React.forwardRef(
   }
 );
 
+// Add the display name
+DateTimePickerComponent.displayName = "DateTimePickerComponent";
 export default DateTimePickerComponent;

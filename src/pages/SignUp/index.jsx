@@ -16,7 +16,7 @@ import SignUpSchema from "src/schemas/SignUpSchema";
 import { useAuth } from "../../hooks/AuthContext";
 import { Colors } from "../../utils/colors";
 import { Title2 } from "./styles";
-import { DatePicker } from "../../components/DatePicker";
+import DatePickerComponent from "../../components/DatePicker";
 
 const SignUp = () => {
   const { user, loading, signUp } = useAuth();
@@ -133,7 +133,7 @@ const SignUp = () => {
                 name="birth_date"
                 control={control}
                 render={({ field }) => (
-                  <DatePicker
+                  <DatePickerComponent
                     {...field}
                     label="Data de Nascimento"
                     required

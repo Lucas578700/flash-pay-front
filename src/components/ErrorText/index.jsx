@@ -1,5 +1,4 @@
 import Typography from "@mui/material/Typography";
-import React from "react";
 import { Colors } from "../../utils/colors";
 
 const ErrorText = ({ children }) => {
