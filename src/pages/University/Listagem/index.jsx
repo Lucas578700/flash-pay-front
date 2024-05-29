@@ -66,8 +66,8 @@ function ListaUniversidade() {
           columns={columns}
           routes={{
             deleteRoute: routes.user,
-            addRoute: "/painel/universiade/cadastrar",
-            editRoute: "/painel/universiade/editar",
+            addRoute: "/painel/universidade/cadastrar",
+            editRoute: "/painel/universidade/editar",
           }}
           columnNames={{
             actions: "Ações",
