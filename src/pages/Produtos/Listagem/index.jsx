@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { Grid, Switch } from "@mui/material";
+import { Grid } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import DataTable from "src/components/DataTable";
 import { ModalError, useModal } from "src/components/Modals";

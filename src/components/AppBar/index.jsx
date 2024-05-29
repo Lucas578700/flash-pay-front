@@ -11,14 +11,14 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-
-import logo from "../../assets/logo.png";
 import { useAuth } from "../../hooks/AuthContext";
+import Logo from "../../assets/logo.png"
+
 
 const Appbar = () => {
   const navigate = useNavigate();
 
-  const pages = ["Produtos"];
+  const pages = [""];
   const { user } = useAuth();
   const [anchorElNav, setAnchorElNav] = useState(null);
 
@@ -34,9 +34,9 @@ const Appbar = () => {
     navigate("/login");
   };
 
-  const irHome = () => {
-    navigate("/");
-  };
+    const irHome = () => {
+      navigate("/");
+    };
 
   const irPainel = () => {
     navigate("/painel");
@@ -46,21 +46,14 @@ const Appbar = () => {
     <AppBar position="absolute">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          {/* <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center" }}>
+        
+
+          <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center" }}>
             <Button onClick={irHome}>
-              <img style={{ width: 70 }} src={logo} alt="logo" />
+              <img style={{ width: 70 }} src={Logo} alt="logo" />
             </Button>
-          </Box> */}
-          {/* <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
-            {pages.map(page => (
-              <Button
-                key={page}
-                onClick={handleCloseNavMenu}
-                sx={{ my: 2, color: "white", display: "block" }}>
-                {page}
-              </Button>
-            ))}
-          </Box> */}
+          </Box>
+          
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
             <IconButton
               size="large"

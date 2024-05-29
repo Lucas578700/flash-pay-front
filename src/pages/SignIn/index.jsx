@@ -63,13 +63,6 @@ const SignIn = () => {
         }}>
 
         
-        
-        <Title2 variant="h4" color="primary">
-          Flash Pay
-        </Title2>
-        <Typography variant="subtitle2" color="primary"> 
-          Acesse sua conta
-        </Typography>
         <Paper
           elevation={2}
           sx={{
@@ -83,6 +76,12 @@ const SignIn = () => {
             gap: 2,
             border: `1px solid #${Colors.primary}`,
           }}>
+            <Title2 variant="h4" color="primary">
+          FlashPay
+        </Title2>
+        <Typography variant="subtitle2" color="primary"> 
+          Acesse sua conta
+        </Typography>
           <form onSubmit={handleSubmit(onSubmit)}>
             <Controller
               name="email"
