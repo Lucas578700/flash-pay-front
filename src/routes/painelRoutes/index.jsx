@@ -4,6 +4,7 @@ import Perfil from "src/pages/Perfil";
 
 import ListaProdutos from "../../pages/Produtos/Listagem";
 import ListaUniversidade from "../../pages/University/Listagem";
+import ListaEstabelecimento from "../../pages/Estabelecimentos/Listagem"
 
 const PainelRoutes = [
   // exemplo depois remove
@@ -21,6 +22,11 @@ const PainelRoutes = [
     path="universidade"
     element={<ListaUniversidade />}
     key="lista-universidade"
+  />,
+  <Route
+    path="estabelecimento"
+    element={<ListaEstabelecimento />}
+    key="lista-estabelecimento"
   />,
   // <Route
   //   path="produto/cadastrar"

@@ -24,6 +24,10 @@ function Sidebar({ open, onOpen, onClose }) {
     navigate("/painel/universidade");
   };
 
+  const irListaEstabelecimento = () => {
+    navigate("/painel/estabelecimento");
+  };
+
   const t = useMediaQuery(theme.breakpoints.up("sm"));
   return (
     <Drawer
@@ -66,6 +70,15 @@ function Sidebar({ open, onOpen, onClose }) {
 
           <ListItemText
             primary="Produtos"
+            style={{ color: "#fff", marginLeft: 20 }}
+          />
+        </ListItem>
+
+        <ListItem button onClick={irListaEstabelecimento}>
+          <LocalLibraryIcon style={{ color: "#fff", fontSize: 28 }} />
+
+          <ListItemText
+            primary="Estabelecimentos"
             style={{ color: "#fff", marginLeft: 20 }}
           />
         </ListItem>
