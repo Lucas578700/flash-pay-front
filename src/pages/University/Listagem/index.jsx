@@ -16,7 +16,7 @@ function ListaUniversidade() {
   const fetchData = useCallback(async (page, per_page) => {
     try {
       setLoading(true);
-      const { data } = await api.get(`${routes.user}?page=${page}&limit=${per_page}`);
+      const { data } = await api.get(`${routes.university}?page=${page}&limit=${per_page}`);
 
       setUniversidades(data.results || []);
       setTotalRows(data.count || 0);
@@ -28,7 +28,7 @@ function ListaUniversidade() {
         props: {
           id: "confirm-get-erro",
           title: "Erro",
-          message: "Ops, aconteceu algum erro ao buscar os produtos",
+          message: "Ops, aconteceu algum erro ao buscar as universidades",
           textConfirmButton: "Ok",
         },
       });
@@ -65,7 +65,7 @@ function ListaUniversidade() {
           data={universidades}
           columns={columns}
           routes={{
-            deleteRoute: routes.user,
+            deleteRoute: routes.university,
             addRoute: "/painel/universidade/cadastrar",
             editRoute: "/painel/universidade/editar",
           }}

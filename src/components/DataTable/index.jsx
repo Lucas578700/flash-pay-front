@@ -128,7 +128,7 @@ function DataTableComponent({
           props: {
             id: "confirm-delete-success",
             title: "Sucesso",
-            message: `${rowToDelete.nome} deletado com sucesso`,
+            message: `${rowToDelete.name} deletado com sucesso`,
             textConfirmButton: "Ok",
           },
         });
@@ -249,7 +249,7 @@ function DataTableComponent({
           {rowToDelete && (
             <p>
               Tem certeza que deseja excluir o item{" "}
-              <strong>{rowToDelete.nome}</strong>?
+              <strong>{rowToDelete.name}</strong>?
             </p>
           )}
         </Modal>

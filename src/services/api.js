@@ -21,6 +21,8 @@ const routes = {
   pais: "address/country/",
   estado: "address/estado/",
   cidade: "address/cidade/",
+  university: "core/university/",
 };
+
 
 export { api, routes };

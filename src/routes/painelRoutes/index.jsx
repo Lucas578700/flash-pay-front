@@ -5,9 +5,21 @@ import Perfil from "src/pages/Perfil";
 import ListaProdutos from "../../pages/Produtos/Listagem";
 import ListaUniversidade from "../../pages/University/Listagem";
 import ListaEstabelecimento from "../../pages/Estabelecimentos/Listagem"
+import FormUniversity from "../../pages/University/Form";
+import EditFormUniversity from "../../pages/University/EditForm";
 
 const PainelRoutes = [
-  // exemplo depois remove
+  
+  <Route
+    path="universidade/cadastrar"
+    element={<FormUniversity />}
+    key="create-university"
+  />,
+  <Route
+    path="universidade/editar/:id"
+    element={<EditFormUniversity />}
+    key="edit-university"
+  />,
   <Route
     index
     element={<DashBoard />}
@@ -28,11 +40,7 @@ const PainelRoutes = [
     element={<ListaEstabelecimento />}
     key="lista-estabelecimento"
   />,
-  // <Route
-  //   path="produto/cadastrar"
-  //   element={<FormPredio />}
-  //   key="create-building"
-  // />,
+  
   // <Route
   //   path="predio/editar/:id"
   //   element={<EditFormPredio />}

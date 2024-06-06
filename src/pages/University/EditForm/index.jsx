@@ -1,11 +1,11 @@
 import {
-    Box,
-    Button,
-    Card,
-    CardContent,
-    CardHeader,
-    Divider,
-    Grid,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Divider,
+  Grid,
 } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -17,11 +17,16 @@ import { api, routes } from "src/services/api";
 import LinearLoader from "src/components/LinearProgress";
 
 import extractErrorDetails from "src/utils/extractErrorDetails";
+import { cpfCnpjMask } from "src/functions/CnpjMask";
 
+const initialValue = {
+  name: "",
+  cnpj: "",
+};
 
-function EditFormUniversidade() {
+function EditFormUniversity() {
   const [universidade, setUniversidade] = useState({});
-  const [loading, setLoading] = useState;
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const { id } = useParams();
@@ -30,7 +35,7 @@ function EditFormUniversidade() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const { data } = await api.get(`${routes.universidades}${id}/`);
+      const { data } = await api.get(`${routes.university}${id}/`);
       setUniversidade(data || {});
     } catch (e) {
       setUniversidade(initialValue);
@@ -57,14 +62,18 @@ function EditFormUniversidade() {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
-  } = useForm<FormState>({
+  } = useForm({
     mode: "all",
   });
 
   const editarUniversidade = useCallback(async () => {
     try {
-      await api.put(`${routes.universidades}${id}/`, universidade);
+      const { cnpj, ...universidadeChange } = universidade;
+      await api.post(routes.university, {
+        ...universidadeChange,
+        cnpj: cnpj.replace(/\D/g, ""),
+      });
+      await api.put(`${routes.university}${id}/`, universidade);
       createModal({
         id: "universidade-modal",
         Component: ModalSuccess,
@@ -96,17 +105,14 @@ function EditFormUniversidade() {
   }, [createModal, navigate, universidade]);
 
   const onChangeField = useCallback(
-    (name) => (e) => {
+    name => e => {
       const { value } = e.target;
       setUniversidade(prevUniversidade => ({
         ...prevUniversidade,
         [name]: value,
       }));
-      if (name === "status") {
-        setValue("status", value, { shouldValidate: true });
-      }
     },
-    [setValue]
+    [setUniversidade]
   );
 
   if (loading) {
@@ -119,7 +125,7 @@ function EditFormUniversidade() {
       <Divider />
       <CardContent>
         <Grid container spacing={2}>
-          <Grid item xs={4}>
+          <Grid item xs={6}>
             <TextFieldComponent
               variant="outlined"
               label="Nome"
@@ -128,7 +134,8 @@ function EditFormUniversidade() {
               error={!!errors?.name}
               helperText={errors?.name?.message}
               inputProps={{ maxLength: 50 }}
-              {...register("nome", {
+              value={universidade.name}
+              {...register("name", {
                 required: { value: true, message: "Campo obrigatório" },
                 minLength: {
                   value: 2,
@@ -143,21 +150,21 @@ function EditFormUniversidade() {
               })}
             />
           </Grid>
-          <Grid item xs={4}>
+          <Grid item xs={6}>
             <TextFieldComponent
               variant="outlined"
               label="CNPJ"
               placeholder="CNPJ"
               margin="normal"
-              type="number"
               error={!!errors?.cnpj}
               helperText={errors?.cnpj?.message}
-              inputProps={{ maxLength: 3 }}
+              inputProps={{ maxLength: 50 }}
+              value={cpfCnpjMask(universidade.cnpj)}
               {...register("cnpj", {
                 required: { value: true, message: "Campo obrigatório" },
                 max: {
-                  value: 999,
-                  message: "No máximo 999 itens",
+                  value: 50,
+                  message: "No máximo 50 itens",
                 },
                 min: {
                   value: 1,
@@ -188,4 +195,4 @@ function EditFormUniversidade() {
   );
 }
 
-export default EditFormUniversidade;
+export default EditFormUniversity;
