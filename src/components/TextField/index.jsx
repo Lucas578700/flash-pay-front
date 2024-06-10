@@ -1,12 +1,13 @@
-import { FC, forwardRef } from "react";
+import { forwardRef } from "react";
 import TextField from "@mui/material/TextField";
+import PropTypes from 'prop-types';
 
 const TextFieldComponent = forwardRef(
   (
     {
       variant = "outlined",
       name,
-      erro,
+      error,
       fullWidth = true,
       margin = "normal",
       ...props
@@ -19,12 +20,21 @@ const TextFieldComponent = forwardRef(
       name={name}
       fullWidth={fullWidth}
       variant={variant}
-      error={!!erro}
-      helperText={erro}
+      error={error}
       margin={margin}
       {...props}
     />
   )
 );
+
+TextFieldComponent.displayName = 'TextFieldComponent';
+
+TextFieldComponent.propTypes = {
+  variant: PropTypes.oneOf(['filled', 'outlined', 'standard']),
+  name: PropTypes.string.isRequired,
+  error: PropTypes.bool,
+  fullWidth: PropTypes.bool,
+  margin: PropTypes.oneOf(['none', 'dense', 'normal']),
+};
 
 export default TextFieldComponent;

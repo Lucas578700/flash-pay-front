@@ -32,13 +32,28 @@ function EditFormUniversity() {
   const { id } = useParams();
   const { createModal } = useModal();
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm({
+    mode: "all",
+    defaultValues: initialValue,
+  });
+
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const { data } = await api.get(`${routes.university}${id}/`);
-      setUniversidade(data || {});
+      const { cnpj, ...universidadeChange } = data;
+
+      reset({
+        ...universidadeChange,
+        cnpj: cpfCnpjMask(cnpj),
+      });
     } catch (e) {
-      setUniversidade(initialValue);
+      reset(initialValue);
       createModal({
         id: "confirm-get-erro-modal",
         Component: ModalError,
@@ -52,24 +67,16 @@ function EditFormUniversity() {
     } finally {
       setLoading(false);
     }
-  }, [createModal]);
+  }, [createModal, ModalError]);
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    mode: "all",
-  });
-
   const editarUniversidade = useCallback(async () => {
     try {
       const { cnpj, ...universidadeChange } = universidade;
-      await api.post(routes.university, {
+      await api.put(`${routes.university}${id}/`, {
         ...universidadeChange,
         cnpj: cnpj.replace(/\D/g, ""),
       });
@@ -134,7 +141,6 @@ function EditFormUniversity() {
               error={!!errors?.name}
               helperText={errors?.name?.message}
               inputProps={{ maxLength: 50 }}
-              value={universidade.name}
               {...register("name", {
                 required: { value: true, message: "Campo obrigatório" },
                 minLength: {
@@ -159,7 +165,6 @@ function EditFormUniversity() {
               error={!!errors?.cnpj}
               helperText={errors?.cnpj?.message}
               inputProps={{ maxLength: 50 }}
-              value={cpfCnpjMask(universidade.cnpj)}
               {...register("cnpj", {
                 required: { value: true, message: "Campo obrigatório" },
                 max: {
