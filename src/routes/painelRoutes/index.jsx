@@ -7,9 +7,16 @@ import ListaUniversidade from "../../pages/University/Listagem";
 import ListaEstabelecimento from "../../pages/Estabelecimentos/Listagem"
 import FormUniversity from "../../pages/University/Form";
 import EditFormUniversity from "../../pages/University/EditForm";
+import FormEstabelecimento from "../../pages/Estabelecimentos/Form";
 
 const PainelRoutes = [
   
+<Route
+    path="estabelecimento/cadastrar"
+    element={<FormEstabelecimento />}
+    key="create-shoppe"
+  />,
+
   <Route
     path="universidade/cadastrar"
     element={<FormUniversity />}

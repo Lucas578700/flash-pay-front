@@ -11,28 +11,38 @@ import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { ModalError, ModalSuccess, useModal } from "src/components/Modals";
-import SelectComponent from "src/components/Select";
 import TextFieldComponent from "src/components/TextField";
 import { api, routes } from "src/services/api";
+import { cpfCnpjMask } from "src/functions/CnpjMask";
 
 import extractErrorDetails from "src/utils/extractErrorDetails";
 
+const initialValue = {
+  name: "",
+  cnpj: "",
+  image: "",
+  description: "",
+};
+
 function FormEstabelecimento() {
-  const [estabelecimento, setEstabelecimento] = useState<FormState>(initialValue);
+  const [estabelecimento, setEstabelecimento] = useState(initialValue);
   const navigate = useNavigate();
   const { createModal } = useModal();
   const {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
-  } = useForm<FormState>({
+  } = useForm({
     mode: "all",
   });
 
   const adicionarEstabelecimento = useCallback(async () => {
     try {
-      await api.post(routes.estabelecimentos, estabelecimento);
+      const { cnpj, ...estabelecimentoChange } = estabelecimento;
+      await api.post(routes.shoppe, {
+        ...estabelecimentoChange,
+        cnpj: cnpj.replace(/\D/g, ""),
+      });
       createModal({
         id: "estabelecimento-modal",
         Component: ModalSuccess,
@@ -70,11 +80,8 @@ function FormEstabelecimento() {
         ...prevEstabelecimento,
         [name]: value,
       }));
-      if (name === "status") {
-        setValue("status", value, { shouldValidate: true });
-      }
     },
-    [setValue]
+    []
   );
 
   return (
@@ -118,12 +125,13 @@ function FormEstabelecimento() {
               required
               error={!!errors?.cnpj}
               helperText={errors?.cnpj?.message}
-              inputProps={{ maxLength: 3 }}
+              inputProps={{ maxLength: 50 }}
+              value={cpfCnpjMask(estabelecimento.cnpj)}
               {...register("cnpj", {
                 required: { value: true, message: "Campo obrigatório" },
                 max: {
-                  value: 999,
-                  message: "No máximo 999 itens",
+                  value: 50,
+                  message: "No máximo 50 itens",
                 },
                 min: {
                   value: 1,
@@ -171,7 +179,7 @@ function FormEstabelecimento() {
               type="text"
               error={!!errors?.description}
               helperText={errors?.description?.message}
-              inputProps={{ maxLength: 3 }}
+              inputProps={{ maxLength: 999 }}
               {...register("description", {
                 required: { value: true, message: "Campo obrigatório" },
                 max: {
