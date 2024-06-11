@@ -50,18 +50,7 @@ function EditFormEstabelecimento() {
       const { data } = await api.get(`${routes.shoppe}${id}/`);
       const { cnpj, ...estabelecimentoChange } = data;
 
-      const formData = new FormData();
-      formData.append("name", estabelecimentoChange.name);
-      formData.append("cnpj", cnpj.replace(/\D/g, ""));
-      formData.append("image", estabelecimentoChange.image);
-      formData.append("description", estabelecimentoChange.description);
-
-      await api.post(routes.shoppe, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      // setEstabelecimento(data || {});
+      
       reset({
         ...estabelecimentoChange,
         cnpj: cpfCnpjMask(cnpj),
@@ -90,6 +79,18 @@ function EditFormEstabelecimento() {
   const editarEstabelecimento = useCallback(async () => {
     try {
       const { cnpj, ...estabelecimentoChange } = estabelecimento;
+      const formData = new FormData();
+      formData.append("name", estabelecimentoChange.name);
+      formData.append("cnpj", cnpj.replace(/\D/g, ""));
+      formData.append("image", estabelecimentoChange.image);
+      formData.append("description", estabelecimentoChange.description);
+
+      await api.post(routes.shoppe, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      setEstabelecimento(data || {});
       await api.put(`${routes.shoppe}${id}/`, {
         ...estabelecimentoChange,
         cnpj: cnpj.replace(/\D/g, ""),
@@ -193,7 +194,6 @@ function EditFormEstabelecimento() {
               label="CNPJ"
               placeholder="Digite o CNPJ"
               margin="normal"
-              type="number"
               error={!!errors?.cnpj}
               helperText={errors?.cnpj?.message}
               inputProps={{ maxLength: 50 }}
