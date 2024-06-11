@@ -8,9 +8,16 @@ import ListaEstabelecimento from "../../pages/Estabelecimentos/Listagem"
 import FormUniversity from "../../pages/University/Form";
 import EditFormUniversity from "../../pages/University/EditForm";
 import FormEstabelecimento from "../../pages/Estabelecimentos/Form";
+import EditFormEstabelecimento from "../../pages/Estabelecimentos/EditForm";
 
 const PainelRoutes = [
   
+<Route
+    path="estabelecimento/editar/:id"
+    element={<EditFormEstabelecimento />}
+    key="edit-shoppe"
+  />,
+
 <Route
     path="estabelecimento/cadastrar"
     element={<FormEstabelecimento />}

@@ -68,7 +68,7 @@ function DataTableComponent({
     setItems(data);
   }, [data]);
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     setSearchText(e.target.value);
   };
 
@@ -84,7 +84,7 @@ function DataTableComponent({
   }, [searchText]);
 
   const openSearch = useCallback(
-    async (value) => {
+    async value => {
       if (!loading) {
         setIsSearchExpanded(value);
         setItemsSearch([]);
@@ -98,14 +98,14 @@ function DataTableComponent({
   }, [navigate, routes.addRoute]);
 
   const onEditClick = useCallback(
-    (row) => {
+    row => {
       navigate(`${routes.editRoute}/${row.id}`);
     },
     [navigate, routes.editRoute]
   );
 
   const onDeleteAlert = useCallback(
-    (row) => {
+    row => {
       setRowToDelete(row);
       setConfirmDeleteModalOpen(true);
     },
@@ -204,7 +204,19 @@ function DataTableComponent({
   }, [openSearch, isSearchExpanded]);
 
   const customColumns = [
-    ...columns,
+    ...columns.filter(column => column.name !== 'Imagem'),
+    {
+      name: "Imagem",
+      cell: row => (
+        <div>
+          <img
+            src={`data:image;base64, ${row.image}`}
+            alt="image"
+            style={{ width: "80px", height: "50px" }}
+          />
+        </div>
+      ),
+    },
     {
       name: columnNames.actions,
       cell: row => (

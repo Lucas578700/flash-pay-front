@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { Grid, Switch } from "@mui/material";
+import { Grid } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import DataTable from "src/components/DataTable";
 import { ModalError, useModal } from "src/components/Modals";
@@ -16,7 +16,7 @@ function ListaEstabelecimentos() {
   const fetchData = useCallback(async (page, per_page) => {
     try {
       setLoading(true);
-      const { data } = await api.get(`${routes.estabelecimentos}?page=${page}&limit=${per_page}`);
+      const { data } = await api.get(`${routes.shoppe}?page=${page}&limit=${per_page}`);
 
       setEstabelecimentos(data.results || []);
       setTotalRows(data.count || 0);
@@ -41,45 +41,10 @@ function ListaEstabelecimentos() {
     fetchData(1, perPage);
   }, [perPage]);
 
-  // const onChangeStatus = async (id, status) => {
-  //   try {
-  //     await api.put(`${`${routes.estabelecimentos}${id}/mudar-status/`}`, {
-  //       status,
-  //     });
-  //   } catch (e) {
-  //     createModal({
-  //       id: "confirm-altera-status-erro-modal",
-  //       Component: ModalError,
-  //       props: {
-  //         id: "confirm-altera-status-erro",
-  //         title: "Erro",
-  //         message: "Ops, aconteceu algum erro ao alterar status do estabelecimento",
-  //         textConfirmButton: "Ok",
-  //       },
-  //     });
-  //   }
-  // };
-
   const columns = [
     { name: "Nome", selector: row => row.name, sortable: true },
     { name: "CNPJ", selector: row => row.cnpj, sortable: true },
     { name: "Imagem", selector: row => row.image, sortable: true },
-    {
-      name: "Status",
-      // eslint-disable-next-line react/no-unstable-nested-components
-      cell: row => {
-        return (
-          <Switch
-
-            defaultChecked={row.status}
-            name="status"
-            onChange={() => {
-              onChangeStatus(row.id, !row.status);
-            }}
-          />
-        );
-      },
-    },
   ];
 
   const handlePageChange = (page) => {
@@ -101,7 +66,7 @@ function ListaEstabelecimentos() {
           data={estabelecimentos}
           columns={columns}
           routes={{
-            deleteRoute: routes.estabelecimentos,
+            deleteRoute: routes.shoppe,
             addRoute: "/painel/estabelecimento/cadastrar",
             editRoute: "/painel/estabelecimento/editar",
           }}

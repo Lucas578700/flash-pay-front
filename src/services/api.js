@@ -22,6 +22,7 @@ const routes = {
   estado: "address/estado/",
   cidade: "address/cidade/",
   university: "core/university/",
+  shoppe: "core/shoppe/"
 };
 
 

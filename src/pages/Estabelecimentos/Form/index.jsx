@@ -39,10 +39,22 @@ function FormEstabelecimento() {
   const adicionarEstabelecimento = useCallback(async () => {
     try {
       const { cnpj, ...estabelecimentoChange } = estabelecimento;
-      await api.post(routes.shoppe, {
-        ...estabelecimentoChange,
-        cnpj: cnpj.replace(/\D/g, ""),
-      });
+
+      const formData = new FormData();
+      formData.append("name", estabelecimentoChange.name);
+      formData.append("cnpj", cnpj.replace(/\D/g, ""));
+      formData.append("image", estabelecimentoChange.image);
+      formData.append("description", estabelecimentoChange.description);
+
+      await api.post(
+        routes.shoppe,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       createModal({
         id: "estabelecimento-modal",
         Component: ModalSuccess,
@@ -71,10 +83,10 @@ function FormEstabelecimento() {
         },
       });
     }
-      }, [createModal, navigate, estabelecimento]);
+  }, [createModal, navigate, estabelecimento]);
 
   const onChangeField = useCallback(
-    (name) => (e) => {
+    name => e => {
       const { value } = e.target;
       setEstabelecimento(prevEstabelecimento => ({
         ...prevEstabelecimento,
@@ -84,9 +96,20 @@ function FormEstabelecimento() {
     []
   );
 
+  const onFileChange = useCallback(e => {
+    const file = e.target.files[0];
+    setEstabelecimento(prevEstabelecimento => ({
+      ...prevEstabelecimento,
+      image: file,
+    }));
+  }, []);
+
   return (
     <Card>
-      <CardHeader title="Estabelecimentos" subheader="Cadastrar Estabelecimento" />
+      <CardHeader
+        title="Estabelecimentos"
+        subheader="Cadastrar Estabelecimento"
+      />
       <Divider />
       <CardContent>
         <Grid container spacing={2}>
@@ -115,13 +138,13 @@ function FormEstabelecimento() {
               })}
             />
           </Grid>
+
           <Grid item xs={4}>
             <TextFieldComponent
               variant="outlined"
               label="CNPJ"
-              placeholder="Digite o CNPJ"
+              placeholder="CNPJ"
               margin="normal"
-              type="number"
               required
               error={!!errors?.cnpj}
               helperText={errors?.cnpj?.message}
@@ -131,7 +154,7 @@ function FormEstabelecimento() {
                 required: { value: true, message: "Campo obrigatório" },
                 max: {
                   value: 50,
-                  message: "No máximo 50 itens",
+                  message: "No máximo 50 digítos",
                 },
                 min: {
                   value: 1,
@@ -143,34 +166,7 @@ function FormEstabelecimento() {
             />
           </Grid>
 
-          {/* <Grid item xs={4}>
-            <TextFieldComponent
-              variant="outlined"
-              label="Imagem"
-              placeholder="Adicione uma imagem"
-              margin="normal"
-              type="number"
-              required
-              error={!!errors?.cnpj}
-              helperText={errors?.cnpj?.message}
-              inputProps={{ maxLength: 3 }}
-              {...register("cnpj", {
-                required: { value: true, message: "Campo obrigatório" },
-                max: {
-                  value: 999,
-                  message: "No máximo 999 itens",
-                },
-                min: {
-                  value: 1,
-                  message: "Campo obrigatório",
-                },
-                value: estabelecimento.cnpj,
-                onChange: onChangeField("cnpj"),
-              })}
-            />
-          </Grid> */}
-
-<Grid item xs={4}>
+          <Grid item xs={4}>
             <TextFieldComponent
               variant="outlined"
               label="Descrição"
@@ -196,6 +192,22 @@ function FormEstabelecimento() {
             />
           </Grid>
 
+          <Grid item xs={4}>
+            <label htmlFor="upload-image">
+              <input
+                style={{ display: "none" }}
+                id="upload-image"
+                name="upload-image"
+                type="file"
+                accept="image/*"
+                onChange={onFileChange}
+              />
+              <Button color="secondary" variant="contained" component="span">
+                Upload Imagem
+              </Button>
+            </label>
+            {estabelecimento.image && <p>{estabelecimento.image.name}</p>}
+          </Grid>
         </Grid>
         <Divider />
         <Box

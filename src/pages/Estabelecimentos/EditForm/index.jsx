@@ -1,40 +1,73 @@
 import {
-    Box,
-    Button,
-    Card,
-    CardContent,
-    CardHeader,
-    Divider,
-    Grid,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Divider,
+  Grid,
 } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { ModalError, ModalSuccess, useModal } from "src/components/Modals";
-//import SelectComponent from "src/components/Select";
 import TextFieldComponent from "src/components/TextField";
 import { api, routes } from "src/services/api";
+import { cpfCnpjMask } from "src/functions/CnpjMask";
 
 import LinearLoader from "src/components/LinearProgress";
 
 import extractErrorDetails from "src/utils/extractErrorDetails";
 
+const initialValue = {
+  name: "",
+  cnpj: "",
+  image: "",
+  description: "",
+};
 
 function EditFormEstabelecimento() {
   const [estabelecimento, setEstabelecimento] = useState({});
-  const [loading, setLoading] = useState;
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const { id } = useParams();
   const { createModal } = useModal();
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm({
+    mode: "all",
+    defaultValues: initialValue,
+  });
+
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const { data } = await api.get(`${routes.estabelecimentos}${id}/`);
-      setEstabelecimento(data || {});
+      const { data } = await api.get(`${routes.shoppe}${id}/`);
+      const { cnpj, ...estabelecimentoChange } = data;
+
+      const formData = new FormData();
+      formData.append("name", estabelecimentoChange.name);
+      formData.append("cnpj", cnpj.replace(/\D/g, ""));
+      formData.append("image", estabelecimentoChange.image);
+      formData.append("description", estabelecimentoChange.description);
+
+      await api.post(routes.shoppe, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      // setEstabelecimento(data || {});
+      reset({
+        ...estabelecimentoChange,
+        cnpj: cpfCnpjMask(cnpj),
+      });
     } catch (e) {
-      setEstabelecimento(initialValue);
+      reset(initialValue);
       createModal({
         id: "confirm-get-erro-modal",
         Component: ModalError,
@@ -54,18 +87,14 @@ function EditFormEstabelecimento() {
     fetchData();
   }, []);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-  } = useForm<FormState>({
-    mode: "all",
-  });
-
   const editarEstabelecimento = useCallback(async () => {
     try {
-      await api.put(`${routes.estabelecimentos}${id}/`, estabelecimento);
+      const { cnpj, ...estabelecimentoChange } = estabelecimento;
+      await api.put(`${routes.shoppe}${id}/`, {
+        ...estabelecimentoChange,
+        cnpj: cnpj.replace(/\D/g, ""),
+      });
+      await api.put(`${routes.shoppe}${id}/`, estabelecimento);
       createModal({
         id: "estabelecimento-modal",
         Component: ModalSuccess,
@@ -97,18 +126,32 @@ function EditFormEstabelecimento() {
   }, [createModal, navigate, estabelecimento]);
 
   const onChangeField = useCallback(
-    (name) => (e) => {
+    name => e => {
       const { value } = e.target;
       setEstabelecimento(prevEstabelecimento => ({
         ...prevEstabelecimento,
         [name]: value,
       }));
-      if (name === "status") {
-        setValue("status", value, { shouldValidate: true });
-      }
     },
-    [setValue]
+    [setEstabelecimento]
   );
+
+  const onFileChange = useCallback(e => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEstabelecimento(prevEstabelecimento => ({
+          ...prevEstabelecimento,
+          image: {
+            file,
+            preview: reader.result,
+          },
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  }, []);
 
   if (loading) {
     return <LinearLoader loading={loading} />;
@@ -153,12 +196,12 @@ function EditFormEstabelecimento() {
               type="number"
               error={!!errors?.cnpj}
               helperText={errors?.cnpj?.message}
-              inputProps={{ maxLength: 3 }}
+              inputProps={{ maxLength: 50 }}
               {...register("cnpj", {
                 required: { value: true, message: "Campo obrigatório" },
                 max: {
-                  value: 999,
-                  message: "No máximo 999 itens",
+                  value: 50,
+                  message: "No máximo 50 itens",
                 },
                 min: {
                   value: 1,
@@ -169,28 +212,6 @@ function EditFormEstabelecimento() {
               })}
             />
           </Grid>
-          {/* <Grid item xs={4}>
-            <SelectComponent
-              fullWidth
-              label="Status"
-              value={estabelecimento.status}
-              defaultValue={estabelecimento.status}
-              {...register("status", {
-                required: { value: true, message: "Campo obrigatório" },
-              })}
-              onChange={onChangeField("status")}
-              options={[
-                {
-                  value: "",
-                  label: <em>Selecione uma opção</em>,
-                  disabled: true,
-                },
-                { value: "true", label: "Ativo" },
-                { value: "false", label: "Inativo" },
-              ]}
-              erro={errors?.status?.message}
-            />
-          </Grid> */}
           <Grid item xs={4}>
             <TextFieldComponent
               variant="outlined"
@@ -199,20 +220,46 @@ function EditFormEstabelecimento() {
               margin="normal"
               error={!!errors?.description}
               helperText={errors?.description?.message}
-              inputProps={{ maxLength: 50 }}
+              inputProps={{ maxLength: 999 }}
               {...register("description", {
                 minLength: {
                   value: 2,
                   message: "No minimo 2 caracteres",
                 },
                 maxLength: {
-                  value: 50,
-                  message: "No máximo 50 caracteres",
+                  value: 999,
+                  message: "No máximo 999 caracteres",
                 },
                 value: estabelecimento.description,
                 onChange: onChangeField("description"),
               })}
             />
+          </Grid>
+
+          <Grid item xs={4}>
+            <label htmlFor="upload-image">
+              <input
+                style={{ display: "none" }}
+                id="upload-image"
+                name="upload-image"
+                type="file"
+                accept="image/*"
+                onChange={onFileChange}
+              />
+              <Button color="secondary" variant="contained" component="span">
+                Upload Imagem
+              </Button>
+            </label>
+            {estabelecimento.image && (
+              <div>
+                <img
+                  src={estabelecimento.image.preview}
+                  alt="Selected"
+                  style={{ width: "100px", height: "100px", marginTop: "10px" }}
+                />
+                <p>{estabelecimento.image.file.name}</p>
+              </div>
+            )}
           </Grid>
         </Grid>
         <Divider />
