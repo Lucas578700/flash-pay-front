@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-globals */
 import LocalLibraryIcon from "@mui/icons-material/LocalLibrary";
+import CabinIcon from "@mui/icons-material/Cabin";
 import {
   List,
   ListItem,
@@ -65,20 +66,19 @@ function Sidebar({ open, onOpen, onClose }) {
             style={{ color: "#fff", marginLeft: 20 }}
           />
         </ListItem>
+        <ListItem button onClick={irListaEstabelecimento}>
+          <CabinIcon style={{ color: "#fff", fontSize: 28 }} />
+
+          <ListItemText
+            primary="Estabelecimentos"
+            style={{ color: "#fff", marginLeft: 20 }}
+          />
+        </ListItem>
         <ListItem button onClick={irListaProduto}>
           <LocalLibraryIcon style={{ color: "#fff", fontSize: 28 }} />
 
           <ListItemText
             primary="Produtos"
-            style={{ color: "#fff", marginLeft: 20 }}
-          />
-        </ListItem>
-
-        <ListItem button onClick={irListaEstabelecimento}>
-          <LocalLibraryIcon style={{ color: "#fff", fontSize: 28 }} />
-
-          <ListItemText
-            primary="Estabelecimentos"
             style={{ color: "#fff", marginLeft: 20 }}
           />
         </ListItem>

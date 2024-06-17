@@ -27,18 +27,19 @@ const initialValue = {
 };
 
 function EditFormEstabelecimento() {
-  const [estabelecimento, setEstabelecimento] = useState({});
   const [loading, setLoading] = useState(false);
-
   const navigate = useNavigate();
   const { id } = useParams();
   const { createModal } = useModal();
+
+  const [imagemApi, setImage] = useState("");
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
   } = useForm({
     mode: "all",
     defaultValues: initialValue,
@@ -48,9 +49,8 @@ function EditFormEstabelecimento() {
     try {
       setLoading(true);
       const { data } = await api.get(`${routes.shoppe}${id}/`);
-      const { cnpj, ...estabelecimentoChange } = data;
-
-      
+      const { cnpj, image, ...estabelecimentoChange } = data;
+      setImage(image);
       reset({
         ...estabelecimentoChange,
         cnpj: cpfCnpjMask(cnpj),
@@ -70,89 +70,72 @@ function EditFormEstabelecimento() {
     } finally {
       setLoading(false);
     }
-  }, [createModal]);
+  }, [createModal, id, reset]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
-  const editarEstabelecimento = useCallback(async () => {
-    try {
-      const { cnpj, ...estabelecimentoChange } = estabelecimento;
-      const formData = new FormData();
-      formData.append("name", estabelecimentoChange.name);
-      formData.append("cnpj", cnpj.replace(/\D/g, ""));
-      formData.append("image", estabelecimentoChange.image);
-      formData.append("description", estabelecimentoChange.description);
+  const editarEstabelecimento = useCallback(
+    async data => {
+      try {
+        const { cnpj, image, ...estabelecimentoChange } = data;
+        const formData = new FormData();
+        formData.append("name", estabelecimentoChange.name);
+        formData.append("cnpj", cnpj.replace(/\D/g, ""));
+        formData.append("description", estabelecimentoChange.description);
+        if (!imagemApi) {
+          formData.append("image", image);
+        }
 
-      await api.post(routes.shoppe, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      setEstabelecimento(data || {});
-      await api.put(`${routes.shoppe}${id}/`, {
-        ...estabelecimentoChange,
-        cnpj: cnpj.replace(/\D/g, ""),
-      });
-      await api.put(`${routes.shoppe}${id}/`, estabelecimento);
-      createModal({
-        id: "estabelecimento-modal",
-        Component: ModalSuccess,
-        props: {
-          id: "confirm-save-success",
-          title: "Sucesso",
-          message: "Estabelecimento editado com sucesso",
-          textConfirmButton: "Ok",
-          onClose: () => navigate("/painel/estabelecimento"),
-        },
-      });
-    } catch (e) {
-      const dataModal = {
-        titulo: "Erro ao salvar",
-        mensagem: extractErrorDetails(e),
-      };
+        await api.put(`${routes.shoppe}${id}/`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
 
-      createModal({
-        id: "confirm-save-erro-modal",
-        Component: ModalError,
-        props: {
-          id: "confirm-save-erro",
-          title: dataModal.titulo,
-          message: dataModal.mensagem,
-          textConfirmButton: "Ok",
-        },
-      });
-    }
-  }, [createModal, navigate, estabelecimento]);
+        createModal({
+          id: "estabelecimento-modal",
+          Component: ModalSuccess,
+          props: {
+            id: "confirm-save-success",
+            title: "Sucesso",
+            message: "Estabelecimento editado com sucesso",
+            textConfirmButton: "Ok",
+            onClose: () => navigate("/painel/estabelecimento"),
+          },
+        });
+      } catch (e) {
+        const dataModal = {
+          titulo: "Erro ao salvar",
+          mensagem: extractErrorDetails(e),
+        };
 
-  const onChangeField = useCallback(
-    name => e => {
-      const { value } = e.target;
-      setEstabelecimento(prevEstabelecimento => ({
-        ...prevEstabelecimento,
-        [name]: value,
-      }));
+        createModal({
+          id: "confirm-save-erro-modal",
+          Component: ModalError,
+          props: {
+            id: "confirm-save-erro",
+            title: dataModal.titulo,
+            message: dataModal.mensagem,
+            textConfirmButton: "Ok",
+          },
+        });
+      }
     },
-    [setEstabelecimento]
+    [createModal, id, navigate]
   );
 
-  const onFileChange = useCallback(e => {
+  const handleCnpjChange = event => {
+    const { value } = event.target;
+    setValue("cnpj", cpfCnpjMask(value));
+  };
+
+  const handleImage = e => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEstabelecimento(prevEstabelecimento => ({
-          ...prevEstabelecimento,
-          image: {
-            file,
-            preview: reader.result,
-          },
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
-  }, []);
+    setImage(null);
+    setValue("image", file);
+  };
 
   if (loading) {
     return <LinearLoader loading={loading} />;
@@ -177,14 +160,12 @@ function EditFormEstabelecimento() {
                 required: { value: true, message: "Campo obrigatório" },
                 minLength: {
                   value: 2,
-                  message: "No minimo 2 caracteres",
+                  message: "No mínimo 2 caracteres",
                 },
                 maxLength: {
                   value: 50,
                   message: "No máximo 50 caracteres",
                 },
-                value: estabelecimento.name,
-                onChange: onChangeField("name"),
               })}
             />
           </Grid>
@@ -207,8 +188,7 @@ function EditFormEstabelecimento() {
                   value: 1,
                   message: "Campo obrigatório",
                 },
-                value: estabelecimento.cnpj,
-                onChange: onChangeField("cnpj"),
+                onChange: handleCnpjChange,
               })}
             />
           </Grid>
@@ -224,14 +204,12 @@ function EditFormEstabelecimento() {
               {...register("description", {
                 minLength: {
                   value: 2,
-                  message: "No minimo 2 caracteres",
+                  message: "No mínimo 2 caracteres",
                 },
                 maxLength: {
                   value: 999,
                   message: "No máximo 999 caracteres",
                 },
-                value: estabelecimento.description,
-                onChange: onChangeField("description"),
               })}
             />
           </Grid>
@@ -241,23 +219,24 @@ function EditFormEstabelecimento() {
               <input
                 style={{ display: "none" }}
                 id="upload-image"
-                name="upload-image"
+                name="image"
                 type="file"
                 accept="image/*"
-                onChange={onFileChange}
+                {...register("image", {
+                  onChange: handleImage,
+                })}
               />
               <Button color="secondary" variant="contained" component="span">
                 Upload Imagem
               </Button>
             </label>
-            {estabelecimento.image && (
+            {imagemApi && (
               <div>
                 <img
-                  src={estabelecimento.image.preview}
+                  src={`data:image;base64, ${imagemApi}`}
                   alt="Selected"
-                  style={{ width: "100px", height: "100px", marginTop: "10px" }}
+                  style={{ width: "100%", height: "100%", marginTop: "10px" }}
                 />
-                <p>{estabelecimento.image.file.name}</p>
               </div>
             )}
           </Grid>

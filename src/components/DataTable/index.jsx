@@ -204,19 +204,23 @@ function DataTableComponent({
   }, [openSearch, isSearchExpanded]);
 
   const customColumns = [
-    ...columns.filter(column => column.name !== 'Imagem'),
-    {
-      name: "Imagem",
-      cell: row => (
-        <div>
-          <img
-            src={`data:image;base64, ${row.image}`}
-            alt="image"
-            style={{ width: "80px", height: "50px" }}
-          />
-        </div>
-      ),
-    },
+    ...columns.filter(column => column.name !== "Imagem"),
+    ...(columns.find(column => column.name === "Imagem")
+      ? [
+          {
+            name: "Imagem",
+            cell: row => (
+              <div>
+                <img
+                  src={`data:image;base64, ${row.image}`}
+                  alt="image"
+                  style={{ width: "80px", height: "50px" }}
+                />
+              </div>
+            ),
+          },
+        ]
+      : []),
     {
       name: columnNames.actions,
       cell: row => (

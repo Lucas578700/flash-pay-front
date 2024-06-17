@@ -80,8 +80,6 @@ function FormUniversity() {
     []
   );
 
-  console.log(universidade)
-
   return (
     <Card>
       <CardHeader title="Universidades" subheader="Cadastrar Universidade" />

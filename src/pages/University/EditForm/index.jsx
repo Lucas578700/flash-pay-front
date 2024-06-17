@@ -25,7 +25,7 @@ const initialValue = {
 };
 
 function EditFormUniversity() {
-  const [universidade, setUniversidade] = useState({});
+  //const [universidade, setUniversidade] = useState({});
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -37,6 +37,8 @@ function EditFormUniversity() {
     handleSubmit,
     formState: { errors },
     reset,
+    getValues,
+    setValue,
   } = useForm({
     mode: "all",
     defaultValues: initialValue,
@@ -75,12 +77,13 @@ function EditFormUniversity() {
 
   const editarUniversidade = useCallback(async () => {
     try {
-      const { cnpj, ...universidadeChange } = universidade;
+      const values = getValues();
+      const { cnpj, ...universidadeChange } = values;
+
       await api.put(`${routes.university}${id}/`, {
         ...universidadeChange,
         cnpj: cnpj.replace(/\D/g, ""),
       });
-      await api.put(`${routes.university}${id}/`, universidade);
       createModal({
         id: "universidade-modal",
         Component: ModalSuccess,
@@ -93,6 +96,7 @@ function EditFormUniversity() {
         },
       });
     } catch (e) {
+      console.log(e);
       const dataModal = {
         titulo: "Erro ao salvar",
         mensagem: extractErrorDetails(e),
@@ -109,18 +113,12 @@ function EditFormUniversity() {
         },
       });
     }
-  }, [createModal, navigate, universidade]);
+  }, [createModal, navigate]);
 
-  const onChangeField = useCallback(
-    name => e => {
-      const { value } = e.target;
-      setUniversidade(prevUniversidade => ({
-        ...prevUniversidade,
-        [name]: value,
-      }));
-    },
-    [setUniversidade]
-  );
+  const handleCnpjChange = event => {
+    const { value } = event.target;
+    setValue("cnpj", cpfCnpjMask(value));
+  };
 
   if (loading) {
     return <LinearLoader loading={loading} />;
@@ -151,8 +149,6 @@ function EditFormUniversity() {
                   value: 50,
                   message: "No máximo 50 caracteres",
                 },
-                value: universidade.name,
-                onChange: onChangeField("name"),
               })}
             />
           </Grid>
@@ -175,8 +171,7 @@ function EditFormUniversity() {
                   value: 1,
                   message: "Campo obrigatório",
                 },
-                value: universidade.cnpj,
-                onChange: onChangeField("cnpj"),
+                onChange: handleCnpjChange,
               })}
             />
           </Grid>

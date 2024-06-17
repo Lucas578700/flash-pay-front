@@ -195,7 +195,7 @@ function FormEstabelecimento() {
           <Grid item xs={4}>
             <label htmlFor="upload-image">
               <input
-                style={{ display: "none" }}
+                style={{ display: "none", marginBottom: 2 }}
                 id="upload-image"
                 name="upload-image"
                 type="file"
