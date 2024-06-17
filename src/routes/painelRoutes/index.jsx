@@ -9,9 +9,17 @@ import FormUniversity from "../../pages/University/Form";
 import EditFormUniversity from "../../pages/University/EditForm";
 import FormEstabelecimento from "../../pages/Estabelecimentos/Form";
 import EditFormEstabelecimento from "../../pages/Estabelecimentos/EditForm";
+import FormProdutos from "../../pages/Produtos/Form";
 
 const PainelRoutes = [
-  
+
+
+<Route
+    path="produto/cadastrar"
+    element={<FormProdutos />}
+    key="create-product"
+  />,
+
 <Route
     path="estabelecimento/editar/:id"
     element={<EditFormEstabelecimento />}

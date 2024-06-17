@@ -16,7 +16,7 @@ function ListaProdutos() {
   const fetchData = useCallback(async (page, per_page) => {
     try {
       setLoading(true);
-      const { data } = await api.get(`${routes.user}?page=${page}&limit=${per_page}`);
+      const { data } = await api.get(`${routes.product}?page=${page}&limit=${per_page}`);
 
       setProdutos(data.results || []);
       setTotalRows(data.count || 0);
@@ -42,8 +42,8 @@ function ListaProdutos() {
   }, [perPage]);
 
   const columns = [
-    { name: "Nome", selector: row => row.nome, sortable: true },
-    { name: "Quantidade", selector: row => row.quantidade, sortable: true },
+    { name: "Nome", selector: row => row.name, sortable: true },
+    { name: "Quantidade", selector: row => row.quantity, sortable: true },
   ];
 
   const handlePageChange = (page) => {
@@ -65,9 +65,9 @@ function ListaProdutos() {
           data={produtos}
           columns={columns}
           routes={{
-            deleteRoute: routes.user,
-            addRoute: "/painel/produtos/cadastrar",
-            editRoute: "/painel/produtos/editar",
+            deleteRoute: routes.product,
+            addRoute: "/painel/produto/cadastrar",
+            editRoute: "/painel/produto/editar",
           }}
           columnNames={{
             actions: "Ações",
