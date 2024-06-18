@@ -16,7 +16,7 @@ function Sidebar({ open, onOpen, onClose }) {
   const navigate = useNavigate();
   const theme = useTheme();
   const irSalasHoje = () => {
-    navigate("/painel/dashboard");
+    navigate("/painel/");
   };
   const irListaProduto = () => {
     navigate("/painel/produto");

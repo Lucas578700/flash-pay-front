@@ -18,9 +18,9 @@ api.interceptors.response.use(
 
 const routes = {
   user: "user/",
-  pais: "address/country/",
-  estado: "address/estado/",
-  cidade: "address/cidade/",
+  country: "address/country/",
+  state: "address/state/",
+  city: "address/city/",
   university: "core/university/",
   shoppe: "core/shoppe/",
   //product: "product/product"

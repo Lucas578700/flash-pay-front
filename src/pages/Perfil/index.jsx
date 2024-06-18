@@ -32,26 +32,25 @@ import { apiViaCep } from "src/services/viaCep";
 import { useAuth } from "../../hooks/AuthContext";
 
 const initialState = {
-  nome_completo: "",
+  full_name: "",
   email: "",
   password: "",
   confirm_password: "",
-  data_nascimento: new Date("01-01-1998"),
+  birth_date: new Date("01-01-1998"),
   cpf_cnpj: "",
-  telefone: "",
+  telephone: "",
   rg: "",
   foto: "",
-  endereco: {
+  address: {
     cep: "",
-    bairro: "",
-    logradouro: "",
-    nr_casa: 0,
-    complemento: "",
-    cidade: "",
-    estado: "",
-    pais: "",
+    neighborhood: "",
+    street: "",
+    house_number: 0,
+    complement: "",
+    city: "",
+    state: "",
+    country: "",
   },
-  cursos: [],
 };
 
 function Perfil() {
@@ -76,7 +75,7 @@ function Perfil() {
   });
 
   const onChangeField = useCallback(
-    (name) => (e) => {
+    name => e => {
       const { value } = e.target;
 
       setUser(prevUser => setNestedValue({ ...prevUser }, name, value));
@@ -91,9 +90,9 @@ function Perfil() {
 
       const [paisResponse, estadoResponse, cidadeResponse, userResponse] =
         await Promise.all([
-          api.get(`${routes.pais}`),
-          api.get(`${routes.estado}`),
-          api.get(`${routes.cidade}?limit=5570`),
+          api.get(`${routes.country}`),
+          api.get(`${routes.state}`),
+          api.get(`${routes.city}?limit=5570`),
           api.get(`${routes.user}${user.id}/`),
         ]);
 
@@ -101,23 +100,25 @@ function Perfil() {
       setEstados(estadoResponse.data.results || []);
       setCidades(cidadeResponse.data.results || []);
 
-      const { data_nascimento, endereco, ...user_change } =
-        userResponse.data || {};
+      const { birth_date, address, ...user_change } = userResponse.data || {};
 
-      const data_format = dayjs(data_nascimento).format("DD-MM-YYYY");
+      const data_format = dayjs(birth_date || "18/08/1998").format(
+        "DD-MM-YYYY"
+      );
       setUser({
         ...user_change,
-        data_nascimento: new Date(data_format),
-        endereco: {
-          ...endereco,
-          pais: endereco.pais.id,
-          estado: endereco.estado.id,
-          cidade: endereco.cidade.id,
+        birth_date: new Date(data_format),
+        address: {
+          ...address,
+          country: address?.country?.id,
+          state: address?.state?.id,
+          city: address?.state?.id,
         },
       });
 
       setLoading(false);
     } catch (e) {
+      console.log(e);
       createModal({
         id: "dados-modal-get",
         Component: ModalError,
@@ -136,7 +137,7 @@ function Perfil() {
     fetchData();
   }, []);
 
-  const checkCep = async (e) => {
+  const checkCep = async e => {
     const cep = e.target.value.replace(/\D/g, "");
     if (cep.length === 8) {
       await searchCep(cep);
@@ -144,48 +145,48 @@ function Perfil() {
   };
 
   const searchCep = useCallback(
-    async (cep) => {
+    async cep => {
       try {
         const {
           data: { bairro, complemento, logradouro, localidade, uf },
         } = await apiViaCep.get(`${cep}/json/`);
 
-        const pais =
-          paises.find(pais => pais.nome === "Brasil")?.id.toString() ?? "";
+        const country =
+          paises.find(country => country.name === "Brasil")?.id.toString() ?? "";
 
-        const estado =
-          estados.find(estado => estado.nome.includes(uf))?.id.toString() ?? "";
+        const state =
+          estados.find(state => state.name.includes(uf))?.id.toString() ?? "";
 
-        const cidade =
+        const city =
           cidades
-            .find(cidade => cidade.nome.includes(localidade))
+            .find(city => city.name.includes(localidade))
             ?.id.toString() ?? "";
 
-        setValue("endereco.cep", cepMask(cep));
-        setValue("endereco.pais", pais);
-        setValue("endereco.cidade", cidade);
-        setValue("endereco.estado", estado);
+        setValue("address.cep", cepMask(cep));
+        setValue("address.country", country);
+        setValue("address.city", city);
+        setValue("address.state", state);
         setValue(
-          "endereco.logradouro",
-          logradouro || usuario.endereco.logradouro
+          "address.street",
+          logradouro || usuario.address.street
         );
-        setValue("endereco.bairro", bairro || usuario.endereco.bairro);
+        setValue("address.neighborhood", bairro || usuario.address.neighborhood);
         setValue(
-          "endereco.complemento",
-          complemento || usuario.endereco.complemento
+          "address.complement",
+          complemento || usuario.address.complement
         );
 
         setUser(prevUsuario => ({
           ...prevUsuario,
-          endereco: {
-            ...prevUsuario.endereco,
+          address: {
+            ...prevUsuario.address,
             cep: cepMask(cep),
-            logradouro: logradouro || usuario.endereco.logradouro,
-            bairro: bairro || usuario.endereco.bairro,
-            complemento: complemento || usuario.endereco.complemento,
-            pais: pais,
-            estado: estado,
-            cidade: cidade,
+            street: logradouro || usuario.address.street,
+            neighborhood: bairro || usuario.address.neighborhood,
+            complement: complemento || usuario.address.complement,
+            country: country,
+            state: state,
+            city: city,
           },
         }));
       } catch (e) {
@@ -205,15 +206,15 @@ function Perfil() {
   );
 
   function formatUser() {
-    const { data_nascimento, telefone, endereco, ...userChange } = usuario;
+    const { birth_date, telephone, address, ...userChange } = usuario;
 
     return {
       ...userChange,
-      data_nascimento: formatDate(data_nascimento),
-      telefone: telefone ? telefone.replace(/\D/g, "") : "",
-      endereco: {
-        ...endereco,
-        cep: endereco.cep.replace(/\D/g, ""),
+      birth_date: formatDate(birth_date),
+      telephone: telephone ? telephone.replace(/\D/g, "") : "",
+      address: {
+        ...address,
+        cep: address.cep.replace(/\D/g, ""),
       },
     };
   }
@@ -221,10 +222,8 @@ function Perfil() {
   const editarUser = useCallback(async () => {
     const user_save = formatUser();
 
-    const url = urlUser;
-
     try {
-      await api.put(`${url}${user.origem_id}/`, user_save);
+      await api.put(`${routes.user}${user.origem_id}/`, user_save);
       createModal({
         id: "user-modal",
         Component: ModalSuccess,
@@ -270,13 +269,13 @@ function Perfil() {
           </Grid>
           <Grid item xs={4}>
             <Typography fontSize={22}>
-              Nome: {usuario?.nome_completo || "Usuário sem nome"}
+              Nome: {usuario?.full_name || "Usuário sem nome"}
             </Typography>
             <Typography>E-mail: {usuario.email}</Typography>
-            <Typography>Telefone: {usuario?.telefone}</Typography>
+            <Typography>Telefone: {usuario?.telephone}</Typography>
             <Typography>
               Data de Nascimento:{" "}
-              {dayjs(usuario.data_nascimento).format("DD/MM/YYYY")}
+              {dayjs(usuario.birth_date || "18/08/1998").format("DD/MM/YYYY")}
             </Typography>
             <Typography>CPF/CNPJ: {usuario.cpf_cnpj}</Typography>
           </Grid>
@@ -292,11 +291,11 @@ function Perfil() {
               variant="outlined"
               label="Nome"
               placeholder="Nome do professor"
-              erro={errors?.nome_completo?.message}
+              erro={errors?.full_name?.message}
               margin="normal"
               required
               inputProps={{ maxLength: 50 }}
-              {...register("nome_completo", {
+              {...register("full_name", {
                 required: { value: true, message: "Campo obrigatório" },
                 minLength: {
                   value: 2,
@@ -306,8 +305,8 @@ function Perfil() {
                   value: 50,
                   message: "No máximo 50 caracteres",
                 },
-                value: usuario.nome_completo,
-                onChange: onChangeField("nome_completo"),
+                value: usuario.full_name,
+                onChange: onChangeField("full_name"),
               })}
             />
           </Grid>
@@ -343,7 +342,7 @@ function Perfil() {
               erro={errors?.cpf_cnpj?.message}
               margin="normal"
               required
-              value={cpfCnpjMask(usuario.cpf_cnpj)}
+              value={cpfCnpjMask(usuario.cpf_cnpj || "")}
               inputProps={{ maxLength: 50 }}
               {...register("cpf_cnpj", {
                 required: { value: true, message: "Campo obrigatório" },
@@ -363,21 +362,21 @@ function Perfil() {
           <Grid item xs={6}>
             <div style={{ marginTop: 16 }}>
               <Controller
-                name="data_nascimento"
+                name="birth_date"
                 control={control}
-                defaultValue={usuario.data_nascimento}
+                defaultValue={usuario.birth_date}
                 render={({ field, fieldState: { error } }) => (
                   <DatePickerComponent
                     field={field}
                     label="Data de nascimento"
                     error={error}
-                    {...register("data_nascimento", {
+                    {...register("birth_date", {
                       required: {
                         value: true,
                         message: "Campo obrigatório",
                       },
-                      value: usuario.data_nascimento,
-                      onChange: onChangeField("data_nascimento"),
+                      value: usuario.birth_date,
+                      onChange: onChangeField("birth_date"),
                     })}
                   />
                 )}
@@ -391,7 +390,7 @@ function Perfil() {
               variant="outlined"
               label="Telefone"
               placeholder="Telefone do usuario"
-              erro={errors?.telefone?.message}
+              erro={errors?.telephone?.message}
               margin="normal"
               InputProps={{
                 inputComponent: MaskedInputComponent,
@@ -399,7 +398,7 @@ function Perfil() {
                   mask: "99 9 9999 9999",
                 },
               }}
-              {...register("telefone", {
+              {...register("telephone", {
                 required: { value: true, message: "Campo obrigatório" },
                 minLength: {
                   value: 2,
@@ -409,8 +408,8 @@ function Perfil() {
                   value: 50,
                   message: "No máximo 50 caracteres",
                 },
-                value: usuario.telefone,
-                onChange: onChangeField("telefone"),
+                value: usuario.telephone,
+                onChange: onChangeField("telephone"),
               })}
             />
           </Grid>
@@ -445,17 +444,17 @@ function Perfil() {
               variant="outlined"
               label="Cep"
               placeholder="Cep do professor"
-              erro={errors?.endereco?.cep?.message}
+              erro={errors?.address?.cep?.message}
               margin="normal"
               required
               InputProps={{
                 inputComponent: MaskedInputComponent,
                 inputProps: {
-                  value: usuario.endereco.cep,
+                  value: usuario.address.cep,
                   mask: "99999-999",
                 },
               }}
-              {...register("endereco.cep", {
+              {...register("address.cep", {
                 required: { value: true, message: "Campo obrigatório" },
                 minLength: {
                   value: 8,
@@ -465,8 +464,8 @@ function Perfil() {
                   value: 8,
                   message: "No máximo 8 caracteres",
                 },
-                onChange: onChangeField("endereco.cep"),
-                onBlur: (e) => {
+                onChange: onChangeField("address.cep"),
+                onBlur: e => {
                   checkCep(e);
                 },
               })}
@@ -477,10 +476,10 @@ function Perfil() {
               variant="outlined"
               label="Bairro"
               placeholder="Bairro do usuario"
-              erro={errors?.endereco?.bairro?.message}
+              erro={errors?.address?.bairro?.message}
               margin="normal"
               inputProps={{ maxLength: 50 }}
-              {...register("endereco.bairro", {
+              {...register("address.bairro", {
                 minLength: {
                   value: 2,
                   message: "No minimo 8 caracteres",
@@ -489,8 +488,8 @@ function Perfil() {
                   value: 50,
                   message: "No máximo 50 caracteres",
                 },
-                value: usuario.endereco.bairro,
-                onChange: onChangeField("endereco.bairro"),
+                value: usuario.address.bairro,
+                onChange: onChangeField("address.bairro"),
               })}
             />
           </Grid>
@@ -501,11 +500,11 @@ function Perfil() {
               variant="outlined"
               label="Logradouro"
               placeholder="Logradouro"
-              erro={errors?.endereco?.logradouro?.message}
+              erro={errors?.address?.street?.message}
               margin="normal"
               required
               inputProps={{ maxLength: 50 }}
-              {...register("endereco.logradouro", {
+              {...register("address.street", {
                 required: { value: true, message: "Campo obrigatório" },
                 minLength: {
                   value: 2,
@@ -515,20 +514,20 @@ function Perfil() {
                   value: 50,
                   message: "No máximo 50 caracteres",
                 },
-                value: usuario.endereco.logradouro,
-                onChange: onChangeField("endereco.logradouro"),
+                value: usuario.address.street,
+                onChange: onChangeField("address.street"),
               })}
             />
           </Grid>
           <Grid item xs={6}>
             <TextFieldComponent
               variant="outlined"
-              label="complemento"
+              label="complement"
               placeholder="Complemento"
-              erro={errors?.endereco?.complemento?.message}
+              erro={errors?.address?.complement?.message}
               margin="normal"
               inputProps={{ maxLength: 50 }}
-              {...register("endereco.complemento", {
+              {...register("address.complement", {
                 required: { value: true, message: "Campo obrigatório" },
                 minLength: {
                   value: 2,
@@ -538,8 +537,8 @@ function Perfil() {
                   value: 50,
                   message: "No máximo 50 caracteres",
                 },
-                value: usuario.endereco.complemento,
-                onChange: onChangeField("endereco.complemento"),
+                value: usuario.address.complement,
+                onChange: onChangeField("address.complement"),
               })}
             />
           </Grid>
@@ -550,11 +549,11 @@ function Perfil() {
               variant="outlined"
               label="Nr casa"
               placeholder="Nr Casa"
-              erro={errors?.endereco?.nr_casa?.message}
+              erro={errors?.address?.house_number?.message}
               margin="normal"
               type="number"
               inputProps={{ maxLength: 50 }}
-              {...register("endereco.nr_casa", {
+              {...register("address.house_number", {
                 minLength: {
                   value: 2,
                   message: "No minimo 8 caracteres",
@@ -563,8 +562,8 @@ function Perfil() {
                   value: 6,
                   message: "No máximo 50 caracteres",
                 },
-                value: usuario.endereco.nr_casa,
-                onChange: onChangeField("endereco.nr_casa"),
+                value: usuario.address.house_number,
+                onChange: onChangeField("address.house_number"),
               })}
             />
           </Grid>
@@ -572,17 +571,17 @@ function Perfil() {
             <SelectComponent
               fullWidth
               label="País"
-              value={usuario.endereco.pais}
-              defaultValue={usuario.endereco.pais}
-              {...register("endereco.pais", {
+              value={usuario.address.country}
+              defaultValue={usuario.address.country}
+              {...register("address.country", {
                 required: { value: true, message: "Campo obrigatório" },
               })}
-              onChange={onChangeField("endereco.pais")}
-              options={paises.map(pais => ({
-                value: `${pais.id}`,
-                label: pais.nome,
+              onChange={onChangeField("address.country")}
+              options={paises.map(country => ({
+                value: `${country.id}`,
+                label: country.nome,
               }))}
-              erro={errors?.endereco?.pais?.message}
+              erro={errors?.address?.country?.message}
             />
           </Grid>
         </Grid>
@@ -591,34 +590,34 @@ function Perfil() {
             <SelectComponent
               fullWidth
               label="Estado"
-              value={usuario.endereco.estado}
-              defaultValue={usuario.endereco.estado}
-              {...register("endereco.estado", {
+              value={usuario.address.state}
+              defaultValue={usuario.address.state}
+              {...register("address.state", {
                 required: { value: true, message: "Campo obrigatório" },
               })}
-              onChange={onChangeField("endereco.estado")}
-              options={estados.map(estado => ({
-                value: `${estado.id}`,
-                label: estado.nome,
+              onChange={onChangeField("address.state")}
+              options={estados.map(state => ({
+                value: `${state.id}`,
+                label: state.nome,
               }))}
-              erro={errors?.endereco?.estado?.message}
+              erro={errors?.address?.state?.message}
             />
           </Grid>
           <Grid item xs={6}>
             <SelectComponent
               fullWidth
               label="Cidade"
-              value={usuario.endereco.cidade}
-              defaultValue={usuario.endereco.cidade}
-              {...register("endereco.cidade", {
+              value={usuario.address.city}
+              defaultValue={usuario.address.city}
+              {...register("address.city", {
                 required: { value: true, message: "Campo obrigatório" },
               })}
-              onChange={onChangeField("endereco.cidade")}
-              options={cidades.map(cidade => ({
-                value: `${cidade.id}`,
-                label: cidade.nome,
+              onChange={onChangeField("address.city")}
+              options={cidades.map(city => ({
+                value: `${city.id}`,
+                label: city.nome,
               }))}
-              erro={errors?.endereco?.cidade?.message}
+              erro={errors?.address?.city?.message}
             />
           </Grid>
         </Grid>
