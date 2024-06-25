@@ -7,12 +7,14 @@ import {
     Divider,
     Grid,
   } from "@mui/material";
+  import { id } from "date-fns/locale";
   import { useCallback, useState } from "react";
   import { useForm } from "react-hook-form";
   import { useNavigate } from "react-router-dom";
   import { ModalError, ModalSuccess, useModal } from "src/components/Modals";
   import TextFieldComponent from "src/components/TextField";
   import { api, routes } from "src/services/api";
+  // import SelectComponent from "src/components/Select";
   
   import extractErrorDetails from "src/utils/extractErrorDetails";
   
@@ -20,8 +22,12 @@ import {
     name: "",
     image: "",
     price: "",
-    category: "",
-    university: "",
+    category: {
+      name: "",
+    },
+    university: {
+      name: "",
+    },
     quantity: "",
   };
   
@@ -219,6 +225,24 @@ import {
                 })}
               />
             </Grid>
+
+          {/* <Grid item xs={6}>
+            <SelectComponent
+              fullWidth
+              label="Categoria"
+              value={produto.category}
+              defaultValue={produto.category}
+              {...register("produto.category", {
+                required: { value: true, message: "Campo obrigatório" },
+              })}
+              onChange={onChangeField("produto.category")}
+              options={categorias.map(state => ({
+                value: `${category.id}`,
+                label: category.nome,
+              }))}
+              erro={errors?.produto?.category?.message}
+            />
+          </Grid> */}
 
             <Grid item xs={4}>
               <label htmlFor="upload-image">

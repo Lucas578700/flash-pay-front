@@ -522,7 +522,7 @@ function Perfil() {
           <Grid item xs={6}>
             <TextFieldComponent
               variant="outlined"
-              label="complement"
+              label="Complemento"
               placeholder="Complemento"
               erro={errors?.address?.complement?.message}
               margin="normal"
@@ -547,8 +547,8 @@ function Perfil() {
           <Grid item xs={6}>
             <TextFieldComponent
               variant="outlined"
-              label="Nr casa"
-              placeholder="Nr Casa"
+              label="N° Casa"
+              placeholder="N° Casa"
               erro={errors?.address?.house_number?.message}
               margin="normal"
               type="number"
