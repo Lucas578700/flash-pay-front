@@ -15,7 +15,7 @@ import TextFieldComponent from "src/components/TextField";
 import { api, routes } from "src/services/api";
 import { cpfCnpjMask } from "src/functions/CnpjMask";
 
-import LinearLoader from "src/components/LinearProgress";
+import LinearLoader from "src/components/LinearProgres";
 
 import extractErrorDetails from "src/utils/extractErrorDetails";
 

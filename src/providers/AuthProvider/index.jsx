@@ -3,7 +3,7 @@ import { AuthContext } from "src/hooks/AuthContext";
 import useAPIError from "src/hooks/useAPIError";
 import { api } from "../../services/api";
 
-import LinearLoader from "src/components/LinearProgress";
+import LinearLoader from "src/components/LinearProgres";
 import extractErrorDetails from "src/utils/extractErrorDetails";
 
 export const AuthProvider = ({ children }) => {

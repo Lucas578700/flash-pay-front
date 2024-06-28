@@ -24,7 +24,7 @@ import extractErrorDetails from "src/utils/extractErrorDetails";
 
 import dayjs from "dayjs";
 import DatePickerComponent from "src/components/DatePicker";
-import LinearLoader from "src/components/LinearProgress";
+import LinearLoader from "src/components/LinearProgres";
 import formatDate from "src/functions/FormatDate";
 import setNestedValue from "src/functions/SetNestedValue";
 import userSchema from "src/schemas/UserSchema";

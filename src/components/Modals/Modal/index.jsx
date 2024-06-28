@@ -14,7 +14,7 @@ import { Button } from "@mui/material";
 import { useModal } from "..";
 
 import HeaderTitleClose from "./HeaderTitleClose";
-import LinearLoader from "../../LinearProgress";
+import LinearLoader from "../../LinearProgres";
 
 function Modal({
   draggable = true,

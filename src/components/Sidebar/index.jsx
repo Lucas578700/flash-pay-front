@@ -1,6 +1,15 @@
 /* eslint-disable no-restricted-globals */
+import { useState } from "react";
 import LocalLibraryIcon from "@mui/icons-material/LocalLibrary";
 import CabinIcon from "@mui/icons-material/Cabin";
+import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
+import ExpandLess from "@mui/icons-material/ExpandLess";
+import ExpandMore from "@mui/icons-material/ExpandMore";
+import SchoolIcon from "@mui/icons-material/School";
+import ThreePIcon from "@mui/icons-material/ThreeP";
+import CategoryIcon from '@mui/icons-material/Category';
+import WalletIcon from '@mui/icons-material/Wallet';
+import ProductionQuantityLimitsIcon from '@mui/icons-material/ProductionQuantityLimits';
 import {
   List,
   ListItem,
@@ -8,6 +17,9 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
+import Collapse from "@mui/material/Collapse";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemIcon from "@mui/material/ListItemIcon";
 import { useNavigate } from "react-router-dom";
 import AMFIcon from "../../assets/logo.png";
 import { AMFIconImage, Drawer, TextoAMF } from "./styles";
@@ -15,11 +27,21 @@ import { AMFIconImage, Drawer, TextoAMF } from "./styles";
 function Sidebar({ open, onOpen, onClose }) {
   const navigate = useNavigate();
   const theme = useTheme();
+
+  const [openSubmenuProduto, setOpenProduto] = useState(false);
+
+  const handleClickProduto = () => {
+    setOpenProduto(!openSubmenuProduto);
+  };
+
   const irSalasHoje = () => {
     navigate("/painel/");
   };
   const irListaProduto = () => {
     navigate("/painel/produto");
+  };
+  const irListaCategoria = () => {
+    navigate("/painel/categoria");
   };
   const irListaUniversidade = () => {
     navigate("/painel/universidade");
@@ -74,14 +96,34 @@ function Sidebar({ open, onOpen, onClose }) {
             style={{ color: "#fff", marginLeft: 20 }}
           />
         </ListItem>
-        <ListItem button onClick={irListaProduto}>
-          <LocalLibraryIcon style={{ color: "#fff", fontSize: 28 }} />
-
+        <ListItemButton onClick={handleClickProduto}>
+          <ProductionQuantityLimitsIcon style={{ color: "#fff", fontSize: 28 }} />
           <ListItemText
             primary="Produtos"
             style={{ color: "#fff", marginLeft: 20 }}
           />
-        </ListItem>
+          {openSubmenuProduto ? (
+            <ExpandLess style={{ color: "#fff", fontSize: 28 }} />
+          ) : (
+            <ExpandMore style={{ color: "#fff", fontSize: 28 }} />
+          )}
+        </ListItemButton>
+        <Collapse in={openSubmenuProduto} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            <ListItemButton sx={{ pl: 4 }} onClick={irListaCategoria}>
+              <ListItemIcon>
+                <CategoryIcon style={{ color: "#fff", fontSize: 28 }} />
+              </ListItemIcon>
+              <ListItemText primary="Categoria" style={{ color: "#fff" }} />
+            </ListItemButton>
+            <ListItemButton sx={{ pl: 4 }} onClick={irListaProduto}>
+              <ListItemIcon>
+                <ProductionQuantityLimitsIcon style={{ color: "#fff", fontSize: 28 }} />
+              </ListItemIcon>
+              <ListItemText primary="Produto" style={{ color: "#fff" }} />
+            </ListItemButton>
+          </List>
+        </Collapse>
       </List>
     </Drawer>
   );

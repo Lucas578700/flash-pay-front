@@ -23,7 +23,8 @@ const routes = {
   city: "address/city/",
   university: "core/university/",
   shoppe: "core/shoppe/",
-  //product: "product/product"
+  product: "product/product/",
+  category: "product/category/"
 };
 
 

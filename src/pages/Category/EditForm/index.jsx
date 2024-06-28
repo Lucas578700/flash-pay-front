@@ -17,15 +17,12 @@ import { api, routes } from "src/services/api";
 import LinearLoader from "src/components/LinearProgres";
 
 import extractErrorDetails from "src/utils/extractErrorDetails";
-import { cpfCnpjMask } from "src/functions/CnpjMask";
 
 const initialValue = {
   name: "",
-  cnpj: "",
 };
 
-function EditFormUniversity() {
-  //const [universidade, setUniversidade] = useState({});
+function EditFormCategory() {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -47,13 +44,8 @@ function EditFormUniversity() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const { data } = await api.get(`${routes.university}${id}/`);
-      const { cnpj, ...universidadeChange } = data;
-
-      reset({
-        ...universidadeChange,
-        cnpj: cpfCnpjMask(cnpj),
-      });
+      const { data } = await api.get(`${routes.category}${id}/`);
+      reset(data);
     } catch (e) {
       reset(initialValue);
       createModal({
@@ -62,7 +54,7 @@ function EditFormUniversity() {
         props: {
           id: "confirm-get-erro",
           title: "Erro",
-          message: "Ops, aconteceu algum erro ao buscar a universidade",
+          message: "Ops, aconteceu algum erro ao buscar a categoria",
           textConfirmButton: "Ok",
         },
       });
@@ -75,24 +67,19 @@ function EditFormUniversity() {
     fetchData();
   }, []);
 
-  const editarUniversidade = useCallback(async () => {
+  const editarCategoria = useCallback(async () => {
     try {
       const values = getValues();
-      const { cnpj, ...universidadeChange } = values;
-
-      await api.put(`${routes.university}${id}/`, {
-        ...universidadeChange,
-        cnpj: cnpj.replace(/\D/g, ""),
-      });
+      await api.put(`${routes.category}${id}/`, values);
       createModal({
-        id: "universidade-modal",
+        id: "categoria-modal",
         Component: ModalSuccess,
         props: {
           id: "confirm-save-success",
           title: "Sucesso",
-          message: "Universidade editada com sucesso",
+          message: "Categoria editada com sucesso",
           textConfirmButton: "Ok",
-          onClose: () => navigate("/painel/universidade"),
+          onClose: () => navigate("/painel/categoria"),
         },
       });
     } catch (e) {
@@ -115,18 +102,13 @@ function EditFormUniversity() {
     }
   }, [createModal, navigate]);
 
-  const handleCnpjChange = event => {
-    const { value } = event.target;
-    setValue("cnpj", cpfCnpjMask(value));
-  };
-
   if (loading) {
     return <LinearLoader loading={loading} />;
   }
 
   return (
     <Card>
-      <CardHeader title="Universidades" subheader="Editar Universidade" />
+      <CardHeader title="Categorias" subheader="Editar Categoria" />
       <Divider />
       <CardContent>
         <Grid container spacing={2}>
@@ -134,7 +116,7 @@ function EditFormUniversity() {
             <TextFieldComponent
               variant="outlined"
               label="Nome"
-              placeholder="Nome da Universidade"
+              placeholder="Nome da Categoria"
               margin="normal"
               error={!!errors?.name}
               helperText={errors?.name?.message}
@@ -152,29 +134,6 @@ function EditFormUniversity() {
               })}
             />
           </Grid>
-          <Grid item xs={6}>
-            <TextFieldComponent
-              variant="outlined"
-              label="CNPJ"
-              placeholder="CNPJ"
-              margin="normal"
-              error={!!errors?.cnpj}
-              helperText={errors?.cnpj?.message}
-              inputProps={{ maxLength: 50 }}
-              {...register("cnpj", {
-                required: { value: true, message: "Campo obrigatório" },
-                max: {
-                  value: 50,
-                  message: "No máximo 50 itens",
-                },
-                min: {
-                  value: 1,
-                  message: "Campo obrigatório",
-                },
-                onChange: handleCnpjChange,
-              })}
-            />
-          </Grid>
         </Grid>
         <Divider />
         <Box
@@ -185,7 +144,7 @@ function EditFormUniversity() {
           }}>
           <Button
             variant="contained"
-            onClick={handleSubmit(editarUniversidade)}
+            onClick={handleSubmit(editarCategoria)}
             className="botao-enviar">
             Editar
           </Button>
@@ -195,4 +154,4 @@ function EditFormUniversity() {
   );
 }
 
-export default EditFormUniversity;
+export default EditFormCategory;

@@ -1,4 +1,4 @@
-import { StyledRoot, StyledLinearProgress } from "./styles";
+import { StyledRoot, StyledLinearProgres } from "./styles";
 
 function LinearLoader(props) {
   const { loading = false, ...rest } = props;
@@ -9,7 +9,7 @@ function LinearLoader(props) {
 
   return (
     <StyledRoot>
-      <StyledLinearProgress
+      <StyledLinearProgres
         color="primary"
         loading={loading ? "true" : "false"}
         {...rest}

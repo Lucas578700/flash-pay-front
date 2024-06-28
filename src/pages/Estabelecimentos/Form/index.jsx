@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -7,13 +8,15 @@ import {
   Divider,
   Grid,
 } from "@mui/material";
-import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { ModalError, ModalSuccess, useModal } from "src/components/Modals";
 import TextFieldComponent from "src/components/TextField";
+import SelectComponent from "src/components/Select";
 import { api, routes } from "src/services/api";
 import { cpfCnpjMask } from "src/functions/CnpjMask";
+
+import LinearLoader from "src/components/LinearProgres";
 
 import extractErrorDetails from "src/utils/extractErrorDetails";
 
@@ -22,10 +25,13 @@ const initialValue = {
   cnpj: "",
   image: "",
   description: "",
+  university: "",
 };
 
 function FormEstabelecimento() {
+  const [loading, setLoading] = useState(false);
   const [estabelecimento, setEstabelecimento] = useState(initialValue);
+  const [universidades, setUniversidades] = useState([]);
   const navigate = useNavigate();
   const { createModal } = useModal();
   const {
@@ -36,6 +42,35 @@ function FormEstabelecimento() {
     mode: "all",
   });
 
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [univerityResponse] = await Promise.all([
+        api.get(`${routes.university}`),
+      ]);
+
+      setUniversidades(univerityResponse.data.results || []);
+      setLoading(false);
+    } catch (e) {
+      setLoading(false);
+      createModal({
+        id: "dados-modal-get",
+        Component: ModalError,
+        props: {
+          id: "dados-modal-get-modal",
+          title: "Erro",
+          message: "Ocorreu algum erro ao buscar universidades",
+          textConfirmButton: "Ok",
+          onClose: () => navigate("/painel"),
+        },
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
   const adicionarEstabelecimento = useCallback(async () => {
     try {
       const { cnpj, ...estabelecimentoChange } = estabelecimento;
@@ -45,16 +80,13 @@ function FormEstabelecimento() {
       formData.append("cnpj", cnpj.replace(/\D/g, ""));
       formData.append("image", estabelecimentoChange.image);
       formData.append("description", estabelecimentoChange.description);
+      formData.append("university", estabelecimentoChange.university);
 
-      await api.post(
-        routes.shoppe,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      await api.post(routes.shoppe, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       createModal({
         id: "estabelecimento-modal",
         Component: ModalSuccess,
@@ -103,6 +135,10 @@ function FormEstabelecimento() {
       image: file,
     }));
   }, []);
+
+  if (loading) {
+    return <LinearLoader loading={loading} />;
+  }
 
   return (
     <Card>
@@ -167,12 +203,50 @@ function FormEstabelecimento() {
           </Grid>
 
           <Grid item xs={4}>
+            <SelectComponent
+              fullWidth
+              label="Universidade"
+              value={estabelecimento.university}
+              defaultValue={estabelecimento.university}
+              {...register("university", {
+                required: { value: true, message: "Campo obrigatório" },
+              })}
+              onChange={onChangeField("university")}
+              options={universidades.map(university => ({
+                value: `${university.id}`,
+                label: university.name,
+              }))}
+              erro={errors?.estabelecimento?.university?.message}
+            />
+          </Grid>
+        </Grid>
+        <Grid container spacing={2}>
+          <Grid item xs={4}>
+            <label htmlFor="upload-image">
+              <input
+                style={{ display: "none", marginBottom: 2 }}
+                id="upload-image"
+                name="upload-image"
+                type="file"
+                accept="image/*"
+                onChange={onFileChange}
+              />
+              <Button color="secondary" variant="contained" component="span">
+                Upload Imagem
+              </Button>
+            </label>
+            {estabelecimento.image && <p>{estabelecimento.image.name}</p>}
+          </Grid>
+        </Grid>
+        <Grid container spacing={2}>
+          <Grid item md={12} xs={12}>
             <TextFieldComponent
               variant="outlined"
               label="Descrição"
               placeholder="Digite a descrição"
               margin="normal"
-              type="text"
+              multiline
+              rows={3}
               error={!!errors?.description}
               helperText={errors?.description?.message}
               inputProps={{ maxLength: 999 }}
@@ -190,23 +264,6 @@ function FormEstabelecimento() {
                 onChange: onChangeField("description"),
               })}
             />
-          </Grid>
-
-          <Grid item xs={4}>
-            <label htmlFor="upload-image">
-              <input
-                style={{ display: "none", marginBottom: 2 }}
-                id="upload-image"
-                name="upload-image"
-                type="file"
-                accept="image/*"
-                onChange={onFileChange}
-              />
-              <Button color="secondary" variant="contained" component="span">
-                Upload Imagem
-              </Button>
-            </label>
-            {estabelecimento.image && <p>{estabelecimento.image.name}</p>}
           </Grid>
         </Grid>
         <Divider />
