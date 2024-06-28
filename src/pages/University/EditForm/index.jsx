@@ -25,7 +25,6 @@ const initialValue = {
 };
 
 function EditFormUniversity() {
-  //const [universidade, setUniversidade] = useState({});
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();

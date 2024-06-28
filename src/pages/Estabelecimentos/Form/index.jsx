@@ -15,9 +15,7 @@ import TextFieldComponent from "src/components/TextField";
 import SelectComponent from "src/components/Select";
 import { api, routes } from "src/services/api";
 import { cpfCnpjMask } from "src/functions/CnpjMask";
-
 import LinearLoader from "src/components/LinearProgres";
-
 import extractErrorDetails from "src/utils/extractErrorDetails";
 
 const initialValue = {
@@ -30,16 +28,18 @@ const initialValue = {
 
 function FormEstabelecimento() {
   const [loading, setLoading] = useState(false);
-  const [estabelecimento, setEstabelecimento] = useState(initialValue);
   const [universidades, setUniversidades] = useState([]);
+  const [imageName, setImageName] = useState("");
   const navigate = useNavigate();
   const { createModal } = useModal();
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm({
     mode: "all",
+    defaultValues: initialValue,
   });
 
   const fetchData = useCallback(async () => {
@@ -71,70 +71,71 @@ function FormEstabelecimento() {
     fetchData();
   }, []);
 
-  const adicionarEstabelecimento = useCallback(async () => {
-    try {
-      const { cnpj, ...estabelecimentoChange } = estabelecimento;
+  const adicionarEstabelecimento = useCallback(
+    async data => {
+      try {
+        const { cnpj, image, ...estabelecimentoChange } = data;
 
-      const formData = new FormData();
-      formData.append("name", estabelecimentoChange.name);
-      formData.append("cnpj", cnpj.replace(/\D/g, ""));
-      formData.append("image", estabelecimentoChange.image);
-      formData.append("description", estabelecimentoChange.description);
-      formData.append("university", estabelecimentoChange.university);
+        const formData = new FormData();
+        formData.append("name", estabelecimentoChange.name);
+        formData.append("cnpj", cnpj.replace(/\D/g, ""));
+        formData.append("image", image[0]);
+        formData.append("description", estabelecimentoChange.description);
+        formData.append("university", estabelecimentoChange.university);
 
-      await api.post(routes.shoppe, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      createModal({
-        id: "estabelecimento-modal",
-        Component: ModalSuccess,
-        props: {
-          id: "confirm-save-success",
-          title: "Sucesso",
-          message: "Estabelecimento cadastrado com sucesso",
-          textConfirmButton: "Ok",
-          onClose: () => navigate("/painel/estabelecimento"),
-        },
-      });
-    } catch (e) {
-      const dataModal = {
-        titulo: "Erro ao salvar",
-        mensagem: extractErrorDetails(e),
-      };
+        await api.post(routes.shoppe, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        createModal({
+          id: "estabelecimento-modal",
+          Component: ModalSuccess,
+          props: {
+            id: "confirm-save-success",
+            title: "Sucesso",
+            message: "Estabelecimento cadastrado com sucesso",
+            textConfirmButton: "Ok",
+            onClose: () => navigate("/painel/estabelecimento"),
+          },
+        });
+      } catch (e) {
+        const dataModal = {
+          titulo: "Erro ao salvar",
+          mensagem: extractErrorDetails(e),
+        };
 
-      createModal({
-        id: "confirm-save-erro-modal",
-        Component: ModalError,
-        props: {
-          id: "confirm-save-erro",
-          title: dataModal.titulo,
-          message: dataModal.mensagem,
-          textConfirmButton: "Ok",
-        },
-      });
-    }
-  }, [createModal, navigate, estabelecimento]);
+        createModal({
+          id: "confirm-save-erro-modal",
+          Component: ModalError,
+          props: {
+            id: "confirm-save-erro",
+            title: dataModal.titulo,
+            message: dataModal.mensagem,
+            textConfirmButton: "Ok",
+          },
+        });
+      }
+    },
+    [createModal, navigate]
+  );
+
+  const onFileChange = useCallback(
+    e => {
+      const file = e.target.files;
+      setValue("image", file);
+      setImageName(file[0]?.name || "");
+    },
+    [setValue]
+  );
 
   const onChangeField = useCallback(
     name => e => {
       const { value } = e.target;
-      setEstabelecimento(prevEstabelecimento => ({
-        ...prevEstabelecimento,
-        [name]: value,
-      }));
+      setValue(name, value);
     },
-    []
+    [setValue]
   );
-
-  const onFileChange = useCallback(e => {
-    const file = e.target.files[0];
-    setEstabelecimento(prevEstabelecimento => ({
-      ...prevEstabelecimento,
-      image: file,
-    }));
-  }, []);
 
   if (loading) {
     return <LinearLoader loading={loading} />;
@@ -163,14 +164,12 @@ function FormEstabelecimento() {
                 required: { value: true, message: "Campo obrigatório" },
                 minLength: {
                   value: 2,
-                  message: "No minimo 2 caracteres",
+                  message: "No mínimo 2 caracteres",
                 },
                 maxLength: {
                   value: 50,
                   message: "No máximo 50 caracteres",
                 },
-                value: estabelecimento.name,
-                onChange: onChangeField("name"),
               })}
             />
           </Grid>
@@ -185,19 +184,12 @@ function FormEstabelecimento() {
               error={!!errors?.cnpj}
               helperText={errors?.cnpj?.message}
               inputProps={{ maxLength: 50 }}
-              value={cpfCnpjMask(estabelecimento.cnpj)}
               {...register("cnpj", {
                 required: { value: true, message: "Campo obrigatório" },
-                max: {
+                maxLength: {
                   value: 50,
-                  message: "No máximo 50 digítos",
+                  message: "No máximo 50 dígitos",
                 },
-                min: {
-                  value: 1,
-                  message: "Campo obrigatório",
-                },
-                value: estabelecimento.cnpj,
-                onChange: onChangeField("cnpj"),
               })}
             />
           </Grid>
@@ -206,8 +198,6 @@ function FormEstabelecimento() {
             <SelectComponent
               fullWidth
               label="Universidade"
-              value={estabelecimento.university}
-              defaultValue={estabelecimento.university}
               {...register("university", {
                 required: { value: true, message: "Campo obrigatório" },
               })}
@@ -216,7 +206,7 @@ function FormEstabelecimento() {
                 value: `${university.id}`,
                 label: university.name,
               }))}
-              erro={errors?.estabelecimento?.university?.message}
+              error={errors?.university?.message}
             />
           </Grid>
         </Grid>
@@ -235,7 +225,8 @@ function FormEstabelecimento() {
                 Upload Imagem
               </Button>
             </label>
-            {estabelecimento.image && <p>{estabelecimento.image.name}</p>}
+            {imageName && <p>{imageName}</p>}
+            {errors?.image && <p>{errors?.image.message}</p>}
           </Grid>
         </Grid>
         <Grid container spacing={2}>
@@ -252,16 +243,10 @@ function FormEstabelecimento() {
               inputProps={{ maxLength: 999 }}
               {...register("description", {
                 required: { value: true, message: "Campo obrigatório" },
-                max: {
+                maxLength: {
                   value: 999,
-                  message: "No máximo 999 itens",
+                  message: "No máximo 999 caracteres",
                 },
-                min: {
-                  value: 1,
-                  message: "Campo obrigatório",
-                },
-                value: estabelecimento.description,
-                onChange: onChangeField("description"),
               })}
             />
           </Grid>

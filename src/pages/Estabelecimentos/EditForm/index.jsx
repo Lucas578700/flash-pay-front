@@ -11,6 +11,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { ModalError, ModalSuccess, useModal } from "src/components/Modals";
+import SelectComponent from "src/components/Select";
 import TextFieldComponent from "src/components/TextField";
 import { api, routes } from "src/services/api";
 import { cpfCnpjMask } from "src/functions/CnpjMask";
@@ -24,10 +25,13 @@ const initialValue = {
   cnpj: "",
   image: "",
   description: "",
+  university: "",
 };
 
 function EditFormEstabelecimento() {
   const [loading, setLoading] = useState(false);
+  const [universidades, setUniversidades] = useState([]);
+  const [universidade, setUniversidade] = useState("");
   const navigate = useNavigate();
   const { id } = useParams();
   const { createModal } = useModal();
@@ -48,13 +52,23 @@ function EditFormEstabelecimento() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const { data } = await api.get(`${routes.shoppe}${id}/`);
-      const { cnpj, image, ...estabelecimentoChange } = data;
+
+      const [shoppeResponse, univerityResponse] = await Promise.all([
+        api.get(`${routes.shoppe}${id}/`),
+        api.get(`${routes.university}`),
+      ]);
+
+      setUniversidades(univerityResponse.data.results || []);
+
+      const { cnpj, image, university, ...estabelecimentoChange } =
+        shoppeResponse.data || {};
       setImage(image);
       reset({
         ...estabelecimentoChange,
         cnpj: cpfCnpjMask(cnpj),
+        university: String(university.id),
       });
+      setUniversidade(String(university.id));
     } catch (e) {
       reset(initialValue);
       createModal({
@@ -193,27 +207,22 @@ function EditFormEstabelecimento() {
             />
           </Grid>
           <Grid item xs={4}>
-            <TextFieldComponent
-              variant="outlined"
-              label="Descrição"
-              placeholder="Digite uma Descrição"
-              margin="normal"
-              error={!!errors?.description}
-              helperText={errors?.description?.message}
-              inputProps={{ maxLength: 999 }}
-              {...register("description", {
-                minLength: {
-                  value: 2,
-                  message: "No mínimo 2 caracteres",
-                },
-                maxLength: {
-                  value: 999,
-                  message: "No máximo 999 caracteres",
-                },
+            <SelectComponent
+              fullWidth
+              label="Universidade"
+              {...register("university", {
+                required: { value: true, message: "Campo obrigatório" },
               })}
+              value={universidade}
+              options={universidades.map(university => ({
+                value: `${university.id}`,
+                label: university.name,
+              }))}
+              erro={errors?.university?.message}
             />
           </Grid>
-
+        </Grid>
+        <Grid container spacing={2}>
           <Grid item xs={4}>
             <label htmlFor="upload-image">
               <input
@@ -239,6 +248,31 @@ function EditFormEstabelecimento() {
                 />
               </div>
             )}
+          </Grid>
+        </Grid>
+        <Grid container spacing={2}>
+          <Grid item md={12} xs={12}>
+            <TextFieldComponent
+              variant="outlined"
+              label="Descrição"
+              placeholder="Digite uma Descrição"
+              margin="normal"
+              multiline
+              rows={3}
+              error={!!errors?.description}
+              helperText={errors?.description?.message}
+              inputProps={{ maxLength: 999 }}
+              {...register("description", {
+                minLength: {
+                  value: 2,
+                  message: "No mínimo 2 caracteres",
+                },
+                maxLength: {
+                  value: 999,
+                  message: "No máximo 999 caracteres",
+                },
+              })}
+            />
           </Grid>
         </Grid>
         <Divider />
