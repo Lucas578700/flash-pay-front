@@ -13,6 +13,7 @@ import FormProdutos from "../../pages/Produtos/Form";
 import FormCategory from "../../pages/Category/Form";
 import EditFormCategory from "../../pages/Category/EditForm";
 import ListCategory from "../../pages/Category/Listagem";
+import EditFormProduct from "../../pages/Produtos/EditForm";
 
 const PainelRoutes = [
   <Route
@@ -26,7 +27,6 @@ const PainelRoutes = [
     key="edit-university"
   />,
   <Route index element={<DashBoard />} key="list-dashboard" />,
-  <Route path="produto" element={<ListaProdutos />} key="lista-produtos" />,
   <Route
     path="universidade"
     element={<ListaUniversidade />}
@@ -47,16 +47,7 @@ const PainelRoutes = [
     element={<EditFormEstabelecimento />}
     key="edit-shoppe"
   />,
-  <Route
-    path="produto/cadastrar"
-    element={<FormProdutos />}
-    key="create-product"
-  />,
-  <Route
-    path="categoria"
-    element={<ListCategory />}
-    key="list-category"
-  />,
+  <Route path="categoria" element={<ListCategory />} key="list-category" />,
   <Route
     path="categoria/cadastrar"
     element={<FormCategory />}
@@ -66,6 +57,17 @@ const PainelRoutes = [
     path="categoria/editar/:id"
     element={<EditFormCategory />}
     key="edit-category"
+  />,
+  <Route path="produto" element={<ListaProdutos />} key="lista-produtos" />,
+  <Route
+    path="produto/cadastrar"
+    element={<FormProdutos />}
+    key="create-product"
+  />,
+  <Route
+    path="produto/editar/:id"
+    element={<EditFormProduct />}
+    key="edit-product"
   />,
   <Route path="perfil" element={<Perfil />} key="perfil" />,
 ];

@@ -10,32 +10,37 @@ function ListaProdutos() {
   const [totalRows, setTotalRows] = useState(0);
   const [perPage, setPerPage] = useState(10);
   const [loading, setLoading] = useState(false);
-  
+
   const { createModal } = useModal();
 
-  const fetchData = useCallback(async (page, per_page) => {
-    try {
-      setLoading(true);
-      const { data } = await api.get(`${routes.product}?page=${page}&limit=${per_page}`);
+  const fetchData = useCallback(
+    async (page, per_page) => {
+      try {
+        setLoading(true);
+        const { data } = await api.get(
+          `${routes.product}?page=${page}&limit=${per_page}`
+        );
 
-      setProdutos(data.results || []);
-      setTotalRows(data.count || 0);
-    } catch (e) {
-      setProdutos([]);
-      createModal({
-        id: "confirm-get-erro-modal",
-        Component: ModalError,
-        props: {
-          id: "confirm-get-erro",
-          title: "Erro",
-          message: "Ops, aconteceu algum erro ao buscar os produtos",
-          textConfirmButton: "Ok",
-        },
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [createModal]);
+        setProdutos(data.results || []);
+        setTotalRows(data.count || 0);
+      } catch (e) {
+        setProdutos([]);
+        createModal({
+          id: "confirm-get-erro-modal",
+          Component: ModalError,
+          props: {
+            id: "confirm-get-erro",
+            title: "Erro",
+            message: "Ops, aconteceu algum erro ao buscar os produtos",
+            textConfirmButton: "Ok",
+          },
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [createModal]
+  );
 
   useEffect(() => {
     fetchData(1, perPage);
@@ -43,16 +48,15 @@ function ListaProdutos() {
 
   const columns = [
     { name: "Nome", selector: row => row.name, sortable: true },
+    { name: "Imagem", selector: row => row.image, sortable: true },
     { name: "Quantidade", selector: row => row.quantity, sortable: true },
   ];
 
-  const handlePageChange = (page) => {
+  const handlePageChange = page => {
     fetchData(page, perPage);
   };
 
-  const handlePerRowsChange = async (
-    newPerPage,
-  ) => {
+  const handlePerRowsChange = async newPerPage => {
     setPerPage(newPerPage);
   };
 

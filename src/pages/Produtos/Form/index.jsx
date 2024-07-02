@@ -31,7 +31,7 @@ const initialValue = {
 
 function FormProdutos() {
   const [loading, setLoading] = useState(false);
-  const [produto, setProduto] = useState(initialValue);
+  const [imageName, setImageName] = useState("");
   const [universidades, setUniversidades] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [barracas, setBarracas] = useState([]);
@@ -41,18 +41,21 @@ function FormProdutos() {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm({
     mode: "all",
+    defaultValues: initialValue,
   });
 
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const [categoryResponse, univerityResponse, shoppeResponse] = await Promise.all([
-        api.get(`${routes.category}`),
-        api.get(`${routes.university}`),
-        api.get(`${routes.shoppe}`),
-      ]);
+      const [categoryResponse, univerityResponse, shoppeResponse] =
+        await Promise.all([
+          api.get(`${routes.category}`),
+          api.get(`${routes.university}`),
+          api.get(`${routes.shoppe}`),
+        ]);
 
       setCategorias(categoryResponse.data.results || []);
       setUniversidades(univerityResponse.data.results || []);
@@ -78,71 +81,74 @@ function FormProdutos() {
     fetchData();
   }, []);
 
-  const adicionarProduto = useCallback(async () => {
-    try {
-      const { ...produtoChange } = produto;
+  const adicionarProduto = useCallback(
+    async data => {
+      try {
+        const { image, ...produtoChange } = data;
 
-      const formData = new FormData();
-      formData.append("name", produtoChange.name);
-      formData.append("image", produtoChange.image);
-      formData.append("description", produtoChange.description);
-      formData.append("price", produtoChange.price);
-      formData.append("category", produtoChange.category);
-      formData.append("university", produtoChange.university);
+        const formData = new FormData();
+        formData.append("name", produtoChange.name);
+        formData.append("image", image[0]);
+        formData.append("quantity", produtoChange.quantity);
+        formData.append("description", produtoChange.description);
+        formData.append("price", produtoChange.price);
+        formData.append("category", produtoChange.category);
+        formData.append("shoppe", produtoChange.shoppe);
+        formData.append("university", produtoChange.university);
 
-      await api.post(routes.product, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      createModal({
-        id: "produto-modal",
-        Component: ModalSuccess,
-        props: {
-          id: "confirm-save-success",
-          title: "Sucesso",
-          message: "Produto cadastrado com sucesso",
-          textConfirmButton: "Ok",
-          onClose: () => navigate("/painel/produto"),
-        },
-      });
-    } catch (e) {
-      const dataModal = {
-        titulo: "Erro ao salvar",
-        mensagem: extractErrorDetails(e),
-      };
+        await api.post(routes.product, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        createModal({
+          id: "produto-modal",
+          Component: ModalSuccess,
+          props: {
+            id: "confirm-save-success",
+            title: "Sucesso",
+            message: "Produto cadastrado com sucesso",
+            textConfirmButton: "Ok",
+            onClose: () => navigate("/painel/produto"),
+          },
+        });
+      } catch (e) {
+        const dataModal = {
+          titulo: "Erro ao salvar",
+          mensagem: extractErrorDetails(e),
+        };
 
-      createModal({
-        id: "confirm-save-erro-modal",
-        Component: ModalError,
-        props: {
-          id: "confirm-save-erro",
-          title: dataModal.titulo,
-          message: dataModal.mensagem,
-          textConfirmButton: "Ok",
-        },
-      });
-    }
-  }, [createModal, navigate, produto]);
+        createModal({
+          id: "confirm-save-erro-modal",
+          Component: ModalError,
+          props: {
+            id: "confirm-save-erro",
+            title: dataModal.titulo,
+            message: dataModal.mensagem,
+            textConfirmButton: "Ok",
+          },
+        });
+      }
+    },
+    [createModal, navigate]
+  );
 
   const onChangeField = useCallback(
     name => e => {
       const { value } = e.target;
-      setProduto(prevProduto => ({
-        ...prevProduto,
-        [name]: value,
-      }));
+      setValue(name, value);
     },
-    []
+    [setValue]
   );
 
-  const onFileChange = useCallback(e => {
-    const file = e.target.files[0];
-    setProduto(prevProduto => ({
-      ...prevProduto,
-      image: file,
-    }));
-  }, []);
+  const onFileChange = useCallback(
+    e => {
+      const file = e.target.files;
+      setValue("image", file);
+      setImageName(file[0]?.name || "");
+    },
+    [setValue]
+  );
 
   if (loading) {
     return <LinearLoader loading={loading} />;
@@ -174,8 +180,6 @@ function FormProdutos() {
                   value: 50,
                   message: "No máximo 50 caracteres",
                 },
-                value: produto.name,
-                onChange: onChangeField("name"),
               })}
             />
           </Grid>
@@ -200,8 +204,6 @@ function FormProdutos() {
                   value: 50,
                   message: "No máximo 50 caracteres",
                 },
-                value: produto.price,
-                onChange: onChangeField("price"),
               })}
             />
           </Grid>
@@ -226,8 +228,6 @@ function FormProdutos() {
                   value: 50,
                   message: "No máximo 50 caracteres",
                 },
-                value: produto.quantity,
-                onChange: onChangeField("quantity"),
               })}
             />
           </Grid>
@@ -237,8 +237,6 @@ function FormProdutos() {
             <SelectComponent
               fullWidth
               label="Universidade"
-              value={produto.university}
-              defaultValue={produto.university}
               {...register("university", {
                 required: { value: true, message: "Campo obrigatório" },
               })}
@@ -254,8 +252,6 @@ function FormProdutos() {
             <SelectComponent
               fullWidth
               label="Barracas"
-              value={produto.shoppe}
-              defaultValue={produto.shoppe}
               {...register("shoppe", {
                 required: { value: true, message: "Campo obrigatório" },
               })}
@@ -273,8 +269,6 @@ function FormProdutos() {
             <SelectComponent
               fullWidth
               label="Categoria"
-              value={produto.category}
-              defaultValue={produto.category}
               {...register("category", {
                 required: { value: true, message: "Campo obrigatório" },
               })}
@@ -291,7 +285,7 @@ function FormProdutos() {
           <Grid item xs={4}>
             <label htmlFor="upload-image">
               <input
-                style={{ display: "none" }}
+                style={{ display: "none", marginBottom: 2 }}
                 id="upload-image"
                 name="upload-image"
                 type="file"
@@ -302,7 +296,8 @@ function FormProdutos() {
                 Upload Imagem
               </Button>
             </label>
-            {produto.image && <p>{produto.image.name}</p>}
+            {imageName && <p>{imageName}</p>}
+            {errors?.image && <p>{errors?.image.message}</p>}
           </Grid>
         </Grid>
         <Grid container spacing={2}>
@@ -327,8 +322,6 @@ function FormProdutos() {
                   value: 500,
                   message: "No máximo 500 caracteres",
                 },
-                value: produto.description,
-                onChange: onChangeField("description"),
               })}
             />
           </Grid>

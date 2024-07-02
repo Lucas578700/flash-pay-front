@@ -22,16 +22,23 @@ import extractErrorDetails from "src/utils/extractErrorDetails";
 
 const initialValue = {
   name: "",
-  cnpj: "",
   image: "",
-  description: "",
+  price: "",
+  category: "",
   university: "",
+  shoppe: "",
+  quantity: "",
 };
 
-function EditFormEstabelecimento() {
+function EditFormProduct() {
   const [loading, setLoading] = useState(false);
   const [universidades, setUniversidades] = useState([]);
+  const [categorias, setCategorias] = useState([]);
+  const [barracas, setBarracas] = useState([]);
   const [universidade, setUniversidade] = useState("");
+  const [categoria, setCategoria] = useState("");
+  const [barraca, setBarraca] = useState("");
+
   const navigate = useNavigate();
   const { id } = useParams();
   const { createModal } = useModal();
@@ -53,22 +60,34 @@ function EditFormEstabelecimento() {
     try {
       setLoading(true);
 
-      const [shoppeResponse, univerityResponse] = await Promise.all([
-        api.get(`${routes.shoppe}${id}/`),
+      const [
+        productResponse,
+        categoryResponse,
+        univerityResponse,
+        shoppeResponse,
+      ] = await Promise.all([
+        api.get(`${routes.product}${id}/`),
+        api.get(`${routes.category}`),
         api.get(`${routes.university}`),
+        api.get(`${routes.shoppe}`),
       ]);
 
+      setCategorias(categoryResponse.data.results || []);
       setUniversidades(univerityResponse.data.results || []);
+      setBarracas(shoppeResponse.data.results || []);
 
-      const { cnpj, image, university, ...estabelecimentoChange } =
-        shoppeResponse.data || {};
+      const { cnpj, image, university, shoppe, category, ...productChange } =
+        productResponse.data || {};
       setImage(image);
       reset({
-        ...estabelecimentoChange,
-        cnpj: cpfCnpjMask(cnpj),
+        ...productChange,
         university: String(university.id),
+        category: String(category.id),
+        shoppe: String(shoppe.id),
       });
       setUniversidade(String(university.id));
+      setCategoria(String(category.id));
+      setBarraca(String(shoppe.id));
     } catch (e) {
       reset(initialValue);
       createModal({
@@ -77,7 +96,7 @@ function EditFormEstabelecimento() {
         props: {
           id: "confirm-get-erro",
           title: "Erro",
-          message: "Ops, aconteceu algum erro ao buscar o estabelecimento",
+          message: "Ops, aconteceu algum erro ao buscar o produto",
           textConfirmButton: "Ok",
         },
       });
@@ -90,33 +109,32 @@ function EditFormEstabelecimento() {
     fetchData();
   }, [fetchData]);
 
-  const editarEstabelecimento = useCallback(
+  const editarProduto = useCallback(
     async data => {
       try {
-        const { cnpj, image, ...estabelecimentoChange } = data;
+        const { cnpj, image, ...produtoChange } = data;
         const formData = new FormData();
-        formData.append("name", estabelecimentoChange.name);
-        formData.append("cnpj", cnpj.replace(/\D/g, ""));
-        formData.append("description", estabelecimentoChange.description);
+        formData.append("name", produtoChange.name);
+        formData.append("description", produtoChange.description);
         if (!image) {
           formData.append("image", image);
         }
 
-        await api.put(`${routes.shoppe}${id}/`, formData, {
+        await api.put(`${routes.product}${id}/`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
 
         createModal({
-          id: "estabelecimento-modal",
+          id: "produto-modal",
           Component: ModalSuccess,
           props: {
             id: "confirm-save-success",
             title: "Sucesso",
-            message: "Estabelecimento editado com sucesso",
+            message: "Produto editado com sucesso",
             textConfirmButton: "Ok",
-            onClose: () => navigate("/painel/estabelecimento"),
+            onClose: () => navigate("/painel/produto"),
           },
         });
       } catch (e) {
@@ -140,11 +158,6 @@ function EditFormEstabelecimento() {
     [createModal, id, navigate]
   );
 
-  const handleCnpjChange = event => {
-    const { value } = event.target;
-    setValue("cnpj", cpfCnpjMask(value));
-  };
-
   const handleImage = e => {
     const file = e.target.files[0];
     setImage(null);
@@ -157,7 +170,7 @@ function EditFormEstabelecimento() {
 
   return (
     <Card>
-      <CardHeader title="Estabelecimentos" subheader="Editar Estabelecimento" />
+      <CardHeader title="Produtos" subheader="Editar Produto" />
       <Divider />
       <CardContent>
         <Grid container spacing={2}>
@@ -165,8 +178,9 @@ function EditFormEstabelecimento() {
             <TextFieldComponent
               variant="outlined"
               label="Nome"
-              placeholder="Nome do Estabelecimento"
+              placeholder="Nome do Produto"
               margin="normal"
+              required
               error={!!errors?.name}
               helperText={errors?.name?.message}
               inputProps={{ maxLength: 50 }}
@@ -174,7 +188,7 @@ function EditFormEstabelecimento() {
                 required: { value: true, message: "Campo obrigatório" },
                 minLength: {
                   value: 2,
-                  message: "No mínimo 2 caracteres",
+                  message: "No minimo 2 caracteres",
                 },
                 maxLength: {
                   value: 50,
@@ -183,30 +197,57 @@ function EditFormEstabelecimento() {
               })}
             />
           </Grid>
+
           <Grid item xs={4}>
             <TextFieldComponent
               variant="outlined"
-              label="CNPJ"
-              placeholder="Digite o CNPJ"
+              label="Preço"
+              placeholder="Preço do Produto"
               margin="normal"
-              error={!!errors?.cnpj}
-              helperText={errors?.cnpj?.message}
+              required
+              error={!!errors?.price}
+              helperText={errors?.price?.message}
               inputProps={{ maxLength: 50 }}
-              {...register("cnpj", {
+              {...register("price", {
                 required: { value: true, message: "Campo obrigatório" },
-                max: {
+                minLength: {
+                  value: 2,
+                  message: "No minimo 2 caracteres",
+                },
+                maxLength: {
                   value: 50,
-                  message: "No máximo 50 itens",
+                  message: "No máximo 50 caracteres",
                 },
-                min: {
-                  value: 1,
-                  message: "Campo obrigatório",
-                },
-                onChange: handleCnpjChange,
               })}
             />
           </Grid>
+
           <Grid item xs={4}>
+            <TextFieldComponent
+              variant="outlined"
+              label="Quantidade"
+              placeholder="Quantidade"
+              margin="normal"
+              required
+              error={!!errors?.quantity}
+              helperText={errors?.quantity?.message}
+              inputProps={{ maxLength: 50 }}
+              {...register("quantity", {
+                required: { value: true, message: "Campo obrigatório" },
+                minLength: {
+                  value: 2,
+                  message: "No minimo 2 caracteres",
+                },
+                maxLength: {
+                  value: 50,
+                  message: "No máximo 50 caracteres",
+                },
+              })}
+            />
+          </Grid>
+        </Grid>
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
             <SelectComponent
               fullWidth
               label="Universidade"
@@ -218,7 +259,39 @@ function EditFormEstabelecimento() {
                 value: `${university.id}`,
                 label: university.name,
               }))}
-              erro={errors?.university?.message}
+              erro={errors?.produto?.university?.message}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <SelectComponent
+              fullWidth
+              label="Barracas"
+              {...register("shoppe", {
+                required: { value: true, message: "Campo obrigatório" },
+              })}
+              value={barraca}
+              options={barracas.map(shoppe => ({
+                value: `${shoppe.id}`,
+                label: shoppe.name,
+              }))}
+              erro={errors?.produto?.shoppe?.message}
+            />
+          </Grid>
+        </Grid>
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <SelectComponent
+              fullWidth
+              label="Categoria"
+              {...register("category", {
+                required: { value: true, message: "Campo obrigatório" },
+              })}
+              value={categoria}
+              options={categorias.map(category => ({
+                value: `${category.id}`,
+                label: category.name,
+              }))}
+              erro={errors?.produto?.category?.message}
             />
           </Grid>
         </Grid>
@@ -255,21 +328,22 @@ function EditFormEstabelecimento() {
             <TextFieldComponent
               variant="outlined"
               label="Descrição"
-              placeholder="Digite uma Descrição"
+              placeholder="Descrição do Produto"
               margin="normal"
               multiline
               rows={3}
               error={!!errors?.description}
               helperText={errors?.description?.message}
-              inputProps={{ maxLength: 999 }}
+              inputProps={{ maxLength: 500 }}
               {...register("description", {
+                required: { value: true, message: "Campo obrigatório" },
                 minLength: {
                   value: 2,
-                  message: "No mínimo 2 caracteres",
+                  message: "No minimo 2 caracteres",
                 },
                 maxLength: {
-                  value: 999,
-                  message: "No máximo 999 caracteres",
+                  value: 500,
+                  message: "No máximo 500 caracteres",
                 },
               })}
             />
@@ -284,7 +358,7 @@ function EditFormEstabelecimento() {
           }}>
           <Button
             variant="contained"
-            onClick={handleSubmit(editarEstabelecimento)}
+            onClick={handleSubmit(editarProduto)}
             className="botao-enviar">
             Editar
           </Button>
@@ -294,4 +368,4 @@ function EditFormEstabelecimento() {
   );
 }
 
-export default EditFormEstabelecimento;
+export default EditFormProduct;
