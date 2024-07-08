@@ -4,31 +4,28 @@ import {
   Card,
   CardContent,
   CardHeader,
+  Checkbox,
   Divider,
+  FormControlLabel,
   Grid,
-  Typography,
 } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import MaskedInputComponent from "src/components/InputMask";
 import { ModalError, ModalSuccess, useModal } from "src/components/Modals";
-import ProfileImageComponent from "src/components/ProfileImage";
 import SelectComponent from "src/components/Select";
 import TextFieldComponent from "src/components/TextField";
-import cepMask from "src/functions/CepMask";
 import { cpfCnpjMask } from "src/functions/CnpjMask";
 import { api, routes } from "src/services/api";
 import extractErrorDetails from "src/utils/extractErrorDetails";
 
-import dayjs from "dayjs";
 import DatePickerComponent from "src/components/DatePicker";
-import LinearLoader from "src/components/LinearProgres";
+import InputPasswordComponent from "src/components/InputPassword";
+import cepMask from "src/functions/CepMask";
 import formatDate from "src/functions/FormatDate";
 import setNestedValue from "src/functions/SetNestedValue";
-import userSchema from "src/schemas/UserSchema";
 import { apiViaCep } from "src/services/viaCep";
-import { useAuth } from "../../hooks/AuthContext";
 
 const initialState = {
   full_name: "",
@@ -50,15 +47,18 @@ const initialState = {
     state: "",
     country: "",
   },
+  admin: false,
+  password: "",
+  confirm_password: "",
+  type_user: "",
 };
 
-function Perfil() {
-  const [usuario, setUser] = useState(initialState);
+function FormUsuario() {
+  const [usuario, setUsuario] = useState(initialState);
   const [paises, setPaises] = useState([]);
   const [estados, setEstados] = useState([]);
   const [cidades, setCidades] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+
   const navigate = useNavigate();
   const { createModal } = useModal();
 
@@ -68,57 +68,48 @@ function Perfil() {
     handleSubmit,
     formState: { errors },
     setValue,
-    reset,
   } = useForm({
     mode: "all",
-    defaultValues: initialState,
+    defaultValue: initialState,
   });
+
+  const onChangeField = useCallback(
+    name => e => {
+      const { value } = e.target;
+
+      setUsuario(prevProfessor =>
+        setNestedValue({ ...prevProfessor }, name, value)
+      );
+      setValue(name, value);
+    },
+    [setUsuario, setValue]
+  );
+
+  const handleBoolean = useCallback(
+    name => e => {
+      const { checked } = e.target;
+
+      setUsuario(prevProfessor =>
+        setNestedValue({ ...prevProfessor }, name, checked)
+      );
+      setValue(name, checked);
+    },
+    [setUsuario, setValue]
+  );
 
   const fetchData = useCallback(async () => {
     try {
-      setLoading(true);
-
-      const [paisResponse, estadoResponse, cidadeResponse, userResponse] =
+      const [paisResponse, estadoResponse, cidadeResponse] =
         await Promise.all([
           api.get(`${routes.country}`),
           api.get(`${routes.state}`),
           api.get(`${routes.city}?limit=5570`),
-          api.get(`${routes.user}${user.id}/`),
         ]);
 
       setPaises(paisResponse.data.results || []);
       setEstados(estadoResponse.data.results || []);
       setCidades(cidadeResponse.data.results || []);
-
-      const { birth_date, address, ...user_change } = userResponse.data || {};
-
-      const data_format = dayjs(birth_date || new Date("1998-1-1")).format(
-        "DD-MM-YYYY"
-      );
-      setUser({
-        ...user_change,
-        birth_date: new Date(data_format),
-        address: {
-          ...address,
-          country: address?.country?.id,
-          state: address?.state?.id,
-          city: address?.state?.id,
-        },
-      });
-      reset({
-        ...user_change,
-        birth_date: new Date(data_format),
-        address: {
-          ...address,
-          country: address?.country?.id,
-          state: address?.state?.id,
-          city: address?.state?.id,
-        },
-      });
-
-      setLoading(false);
     } catch (e) {
-      console.log(e);
       createModal({
         id: "dados-modal-get",
         Component: ModalError,
@@ -127,7 +118,7 @@ function Perfil() {
           title: "Erro",
           message: "Ocorreu algum erro ao buscar os endereços e dados",
           textConfirmButton: "Ok",
-          onClose: () => navigate("/painel/perfil/"),
+          onClose: () => navigate("/painel"),
         },
       });
     }
@@ -137,19 +128,22 @@ function Perfil() {
     fetchData();
   }, []);
 
-  const onChangeField = useCallback(
-    (name) => (e) => {
-      const { value } = e.target;
+  function formatUser() {
+    const { confirm_password, birth_date, telephone, address, ...userChange } =
+      usuario;
 
-      setUser(prevProfessor =>
-        setNestedValue({ ...prevProfessor }, name, value)
-      );
-      setValue(name, value);
-    },
-    [setUser, setValue]
-  );
+    return {
+      ...userChange,
+      birth_date: formatDate(birth_date),
+      telephone: telephone ? telephone.replace(/\D/g, "") : "",
+      address: {
+        ...address,
+        cep: address.cep.replace(/\D/g, ""),
+      },
+    };
+  }
 
-  const checkCep = async (e) => {
+  const checkCep = async e => {
     const cep = e.target.value.replace(/\D/g, "");
     if (cep.length === 8) {
       await searchCep(cep);
@@ -165,6 +159,8 @@ function Perfil() {
 
         const pais =
           paises.find(pais => pais.name === "Brasil")?.id.toString() ?? "";
+
+        console.log(estados)
 
         const estado =
           estados.find(estado => estado.acronym.includes(uf))?.id.toString() ?? "";
@@ -188,7 +184,7 @@ function Perfil() {
           complemento || usuario.address.complement
         );
 
-        setUser(prevProfessor => ({
+        setUsuario(prevProfessor => ({
           ...prevProfessor,
           address: {
             ...prevProfessor.address,
@@ -218,34 +214,20 @@ function Perfil() {
     [paises, estados, cidades]
   );
 
-  function formatUser() {
-    const { birth_date, telephone, address, ...userChange } = usuario;
-
-    return {
-      ...userChange,
-      birth_date: formatDate(birth_date),
-      telephone: telephone ? telephone.replace(/\D/g, "") : "",
-      address: {
-        ...address,
-        cep: address.cep.replace(/\D/g, ""),
-      },
-    };
-  }
-
-  const editarUser = useCallback(async () => {
+  const adicionarUsuario = useCallback(async () => {
     const user_save = formatUser();
 
     try {
-      await api.put(`${routes.user}${user.origem_id}/`, user_save);
+      await api.post(routes.user, user_save);
       createModal({
         id: "user-modal",
         Component: ModalSuccess,
         props: {
           id: "confirm-save-success",
           title: "Sucesso",
-          message: "Usuário editado com sucesso",
+          message: "Usuário cadastrado com sucesso",
           textConfirmButton: "Ok",
-          onClose: () => navigate("/painel/perfil"),
+          onClose: () => navigate("/painel/usuario"),
         },
       });
     } catch (e) {
@@ -267,37 +249,9 @@ function Perfil() {
     }
   }, [navigate, createModal, formatUser]);
 
-  if (loading) {
-    return <LinearLoader loading={loading} />;
-  }
-
   return (
     <Card>
-      <CardHeader title="Perfil" />
-      <Divider />
-      <CardContent>
-        <Grid container spacing={2}>
-          <Grid item xs={4}>
-            <ProfileImageComponent image={usuario?.foto || ""} />
-          </Grid>
-          <Grid item xs={4}>
-            <Typography fontSize={22}>
-              Nome: {usuario?.full_name || "Usuário sem nome"}
-            </Typography>
-            <Typography>E-mail: {usuario.email}</Typography>
-            <Typography>Telefone: {usuario?.telephone}</Typography>
-            <Typography>
-              Data de Nascimento:{" "}
-              {dayjs(usuario.birth_date || new Date("1998-1-1")).format(
-                "DD/MM/YYYY"
-              )}
-            </Typography>
-            <Typography>CPF/CNPJ: {usuario.cpf_cnpj}</Typography>
-          </Grid>
-        </Grid>
-      </CardContent>
-      <Divider />
-      <CardHeader title="Conta" />
+      <CardHeader title="Usuários" subheader="Cadastrar Usuário" />
       <Divider />
       <CardContent>
         <Grid container spacing={2}>
@@ -354,7 +308,7 @@ function Perfil() {
               erro={errors?.cpf_cnpj?.message}
               margin="normal"
               required
-              value={cpfCnpjMask(usuario.cpf_cnpj || "")}
+              value={cpfCnpjMask(usuario.cpf_cnpj)}
               inputProps={{ maxLength: 50 }}
               {...register("cpf_cnpj", {
                 required: { value: true, message: "Campo obrigatório" },
@@ -374,9 +328,9 @@ function Perfil() {
           <Grid item xs={6}>
             <div style={{ marginTop: 16 }}>
               <Controller
-                name={"birth_date"}
+                name="birth_date"
                 control={control}
-                defaultValue={usuario?.birth_date}
+                defaultValue={usuario.birth_date}
                 render={({ field, fieldState: { error } }) => (
                   <DatePickerComponent
                     field={field}
@@ -398,7 +352,7 @@ function Perfil() {
             <TextFieldComponent
               variant="outlined"
               label="Telefone"
-              placeholder="Telefone do usuário"
+              placeholder="Telefone do usuario"
               erro={errors?.telephone?.message}
               margin="normal"
               InputProps={{
@@ -426,7 +380,7 @@ function Perfil() {
             <TextFieldComponent
               variant="outlined"
               label="RG"
-              placeholder="RG do professor"
+              placeholder="RG do usuario"
               erro={errors?.rg?.message}
               margin="normal"
               inputProps={{ maxLength: 50 }}
@@ -442,21 +396,55 @@ function Perfil() {
         </Grid>
       </CardContent>
       <Divider />
-      <CardHeader subheader="Editar Endereço" />
+      <CardHeader subheader="Cadastrar Permissão" />
+      <CardContent>
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <FormControlLabel
+              control={<Checkbox onChange={handleBoolean("admin")} />}
+              label="Administrador"
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <SelectComponent
+              fullWidth
+              label="Tipo de usuário"
+              value={usuario.country}
+              defaultValue={usuario.type_user}
+              {...register("type_user", {
+                required: { value: true, message: "Campo obrigatório" },
+              })}
+              onChange={onChangeField("type_user")}
+              options={[
+                {
+                  value: "administrador",
+                  label: "Administrador",
+                },
+                {
+                  value: "vendedor",
+                  label: "Vendedor",
+                },
+              ]}
+              erro={errors?.type_user?.message}
+            />
+          </Grid>
+        </Grid>
+      </CardContent>
+      <Divider />
+      <CardHeader subheader="Cadastrar Endereço" />
       <CardContent>
         <Grid container spacing={2}>
           <Grid item xs={6}>
             <TextFieldComponent
               variant="outlined"
               label="Cep"
-              placeholder="Cep do usuário"
+              placeholder="Cep do usuario"
               erro={errors?.address?.cep?.message}
               margin="normal"
               required
               InputProps={{
                 inputComponent: MaskedInputComponent,
                 inputProps: {
-                  value: usuario.address.cep,
                   mask: "99999-999",
                 },
               }}
@@ -481,7 +469,7 @@ function Perfil() {
             <TextFieldComponent
               variant="outlined"
               label="Bairro"
-              placeholder="Bairro do usuário"
+              placeholder="Bairro do usuario"
               erro={errors?.address?.neighborhood?.message}
               margin="normal"
               inputProps={{ maxLength: 50 }}
@@ -494,7 +482,7 @@ function Perfil() {
                   value: 50,
                   message: "No máximo 50 caracteres",
                 },
-                value: usuario.address?.neighborhood,
+                value: usuario.address.neighborhood,
                 onChange: onChangeField("address.neighborhood"),
               })}
             />
@@ -520,7 +508,7 @@ function Perfil() {
                   value: 50,
                   message: "No máximo 50 caracteres",
                 },
-                value: usuario.address?.street,
+                value: usuario.address.street,
                 onChange: onChangeField("address.street"),
               })}
             />
@@ -543,7 +531,7 @@ function Perfil() {
                   value: 50,
                   message: "No máximo 50 caracteres",
                 },
-                value: usuario.address?.complement,
+                value: usuario.address.complement,
                 onChange: onChangeField("address.complement"),
               })}
             />
@@ -568,7 +556,7 @@ function Perfil() {
                   value: 6,
                   message: "No máximo 50 caracteres",
                 },
-                value: usuario.address?.house_number,
+                value: usuario.address.house_number,
                 onChange: onChangeField("address.house_number"),
               })}
             />
@@ -629,6 +617,58 @@ function Perfil() {
         </Grid>
       </CardContent>
       <Divider />
+      <CardHeader subheader="Cadastrar Senha" />
+      <CardContent>
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <InputPasswordComponent
+              variant="outlined"
+              label="Senha"
+              placeholder="Senha do usuario"
+              erro={errors?.password?.message}
+              margin="normal"
+              required
+              {...register("password", {
+                required: { value: true, message: "Campo obrigatório" },
+                minLength: {
+                  value: 8,
+                  message: "No minimo 8 caracteres",
+                },
+                maxLength: {
+                  value: 12,
+                  message: "No máximo 12 caracteres",
+                },
+                value: usuario.password,
+                onChange: onChangeField("password"),
+              })}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <InputPasswordComponent
+              variant="outlined"
+              label="Confirmar senha"
+              placeholder="Confirmar senha do usuario"
+              erro={errors?.confirm_password?.message}
+              margin="normal"
+              required
+              {...register("confirm_password", {
+                required: { value: true, message: "Campo obrigatório" },
+                minLength: {
+                  value: 8,
+                  message: "No minimo 8 caracteres",
+                },
+                maxLength: {
+                  value: 12,
+                  message: "No máximo 12 caracteres",
+                },
+                value: usuario.confirm_password,
+                onChange: onChangeField("confirm_password"),
+              })}
+            />
+          </Grid>
+        </Grid>
+      </CardContent>
+      <Divider />
       <Box
         sx={{
           display: "flex",
@@ -637,13 +677,13 @@ function Perfil() {
         }}>
         <Button
           variant="contained"
-          onClick={handleSubmit(editarUser)}
+          onClick={handleSubmit(adicionarUsuario)}
           className="botao-enviar">
-          Editar
+          Cadastrar
         </Button>
       </Box>
     </Card>
   );
 }
 
-export default Perfil;
+export default FormUsuario;

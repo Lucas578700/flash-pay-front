@@ -4,31 +4,30 @@ import {
   Card,
   CardContent,
   CardHeader,
+  Checkbox,
   Divider,
+  FormControlLabel,
   Grid,
-  Typography,
 } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import MaskedInputComponent from "src/components/InputMask";
 import { ModalError, ModalSuccess, useModal } from "src/components/Modals";
-import ProfileImageComponent from "src/components/ProfileImage";
 import SelectComponent from "src/components/Select";
 import TextFieldComponent from "src/components/TextField";
-import cepMask from "src/functions/CepMask";
 import { cpfCnpjMask } from "src/functions/CnpjMask";
 import { api, routes } from "src/services/api";
 import extractErrorDetails from "src/utils/extractErrorDetails";
 
 import dayjs from "dayjs";
+import { useParams } from "react-router-dom";
 import DatePickerComponent from "src/components/DatePicker";
 import LinearLoader from "src/components/LinearProgres";
+import cepMask from "src/functions/CepMask";
 import formatDate from "src/functions/FormatDate";
 import setNestedValue from "src/functions/SetNestedValue";
-import userSchema from "src/schemas/UserSchema";
 import { apiViaCep } from "src/services/viaCep";
-import { useAuth } from "../../hooks/AuthContext";
 
 const initialState = {
   full_name: "",
@@ -50,16 +49,24 @@ const initialState = {
     state: "",
     country: "",
   },
+  admin: false,
+  password: "",
+  confirm_password: "",
+  type_user: "",
 };
 
-function Perfil() {
-  const [usuario, setUser] = useState(initialState);
+function EditFormUsuario() {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(initialState);
   const [paises, setPaises] = useState([]);
   const [estados, setEstados] = useState([]);
   const [cidades, setCidades] = useState([]);
+
+  console.log(user.type_user);
+
+  const { id } = useParams();
+
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
-  const navigate = useNavigate();
   const { createModal } = useModal();
 
   const {
@@ -68,51 +75,71 @@ function Perfil() {
     handleSubmit,
     formState: { errors },
     setValue,
-    reset,
   } = useForm({
     mode: "all",
-    defaultValues: initialState,
+    defaultValues: initialState
   });
+
+  const onChangeField = useCallback(
+    (name) => (e) => {
+      const { value } = e.target;
+
+      setUser(prevProfessor =>
+        setNestedValue({ ...prevProfessor }, name, value)
+      );
+      setValue(name, value);
+    },
+    [setUser, setValue]
+  );
+
+  const handleBoolean = useCallback(
+    (name) => (e) => {
+      const { checked } = e.target;
+
+      setUser(prevProfessor =>
+        setNestedValue({ ...prevProfessor }, name, checked)
+      );
+      setValue(name, checked);
+    },
+    [setUser, setValue]
+  );
 
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-
-      const [paisResponse, estadoResponse, cidadeResponse, userResponse] =
-        await Promise.all([
-          api.get(`${routes.country}`),
-          api.get(`${routes.state}`),
-          api.get(`${routes.city}?limit=5570`),
-          api.get(`${routes.user}${user.id}/`),
-        ]);
+      const [
+        paisResponse,
+        estadoResponse,
+        cidadeResponse,
+        userResponse,
+      ] = await Promise.all([
+        api.get(`${routes.country}`),
+        api.get(`${routes.state}`),
+        api.get(`${routes.city}?limit=5570`),
+        api.get(`${routes.user}${id}/`),
+      ]);
 
       setPaises(paisResponse.data.results || []);
       setEstados(estadoResponse.data.results || []);
       setCidades(cidadeResponse.data.results || []);
 
-      const { birth_date, address, ...user_change } = userResponse.data || {};
+      const {
+        birth_date,
+        address,
+        admin,
+        ...user_change
+      } = userResponse.data || {};
 
-      const data_format = dayjs(birth_date || new Date("1998-1-1")).format(
-        "DD-MM-YYYY"
-      );
+      const data_format = dayjs(birth_date || new Date("1998-1-1")).format("DD-MM-YYYY");
       setUser({
         ...user_change,
         birth_date: new Date(data_format),
+        admin: admin,
         address: {
           ...address,
-          country: address?.country?.id,
-          state: address?.state?.id,
-          city: address?.state?.id,
-        },
-      });
-      reset({
-        ...user_change,
-        birth_date: new Date(data_format),
-        address: {
-          ...address,
-          country: address?.country?.id,
-          state: address?.state?.id,
-          city: address?.state?.id,
+          country: address?.country?.id || "",
+          state: address?.state?.id || "",
+          city: address?.city?.id || "",
         },
       });
 
@@ -127,7 +154,7 @@ function Perfil() {
           title: "Erro",
           message: "Ocorreu algum erro ao buscar os endereços e dados",
           textConfirmButton: "Ok",
-          onClose: () => navigate("/painel/perfil/"),
+          onClose: () => navigate("/painel"),
         },
       });
     }
@@ -136,18 +163,6 @@ function Perfil() {
   useEffect(() => {
     fetchData();
   }, []);
-
-  const onChangeField = useCallback(
-    (name) => (e) => {
-      const { value } = e.target;
-
-      setUser(prevProfessor =>
-        setNestedValue({ ...prevProfessor }, name, value)
-      );
-      setValue(name, value);
-    },
-    [setUser, setValue]
-  );
 
   const checkCep = async (e) => {
     const cep = e.target.value.replace(/\D/g, "");
@@ -178,14 +193,14 @@ function Perfil() {
         setValue("address.country", pais);
         setValue("address.city", cidade);
         setValue("address.state", estado);
-        setValue("address.street", logradouro || usuario.address.street);
+        setValue("address.street", logradouro || user.address.street);
         setValue(
           "address.neighborhood",
-          bairro || usuario.address.neighborhood
+          bairro || user.address.neighborhood
         );
         setValue(
           "address.complement",
-          complemento || usuario.address.complement
+          complemento || user.address.complement
         );
 
         setUser(prevProfessor => ({
@@ -193,9 +208,9 @@ function Perfil() {
           address: {
             ...prevProfessor.address,
             cep: cepMask(cep),
-            street: logradouro || usuario.address.street,
-            neighborhood: bairro || usuario.address.neighborhood,
-            complement: complemento || usuario.address.complement,
+            street: logradouro || user.address.street,
+            neighborhood: bairro || user.address.neighborhood,
+            complement: complemento || user.address.complement,
             country: pais,
             state: estado,
             city: cidade,
@@ -219,12 +234,14 @@ function Perfil() {
   );
 
   function formatUser() {
-    const { birth_date, telephone, address, ...userChange } = usuario;
+    const { birth_date, telephone, address, admin, ...userChange } =
+      user;
 
     return {
       ...userChange,
       birth_date: formatDate(birth_date),
       telephone: telephone ? telephone.replace(/\D/g, "") : "",
+      admin: admin,
       address: {
         ...address,
         cep: address.cep.replace(/\D/g, ""),
@@ -232,11 +249,11 @@ function Perfil() {
     };
   }
 
-  const editarUser = useCallback(async () => {
+  const editarUsuario = useCallback(async () => {
     const user_save = formatUser();
 
     try {
-      await api.put(`${routes.user}${user.origem_id}/`, user_save);
+      await api.put(`${routes.user}${id}/`, user_save);
       createModal({
         id: "user-modal",
         Component: ModalSuccess,
@@ -245,7 +262,7 @@ function Perfil() {
           title: "Sucesso",
           message: "Usuário editado com sucesso",
           textConfirmButton: "Ok",
-          onClose: () => navigate("/painel/perfil"),
+          onClose: () => navigate("/painel/user"),
         },
       });
     } catch (e) {
@@ -273,31 +290,7 @@ function Perfil() {
 
   return (
     <Card>
-      <CardHeader title="Perfil" />
-      <Divider />
-      <CardContent>
-        <Grid container spacing={2}>
-          <Grid item xs={4}>
-            <ProfileImageComponent image={usuario?.foto || ""} />
-          </Grid>
-          <Grid item xs={4}>
-            <Typography fontSize={22}>
-              Nome: {usuario?.full_name || "Usuário sem nome"}
-            </Typography>
-            <Typography>E-mail: {usuario.email}</Typography>
-            <Typography>Telefone: {usuario?.telephone}</Typography>
-            <Typography>
-              Data de Nascimento:{" "}
-              {dayjs(usuario.birth_date || new Date("1998-1-1")).format(
-                "DD/MM/YYYY"
-              )}
-            </Typography>
-            <Typography>CPF/CNPJ: {usuario.cpf_cnpj}</Typography>
-          </Grid>
-        </Grid>
-      </CardContent>
-      <Divider />
-      <CardHeader title="Conta" />
+      <CardHeader title="Usuários" subheader="Editar Usuário" />
       <Divider />
       <CardContent>
         <Grid container spacing={2}>
@@ -320,7 +313,7 @@ function Perfil() {
                   value: 50,
                   message: "No máximo 50 caracteres",
                 },
-                value: usuario.full_name,
+                value: user.full_name,
                 onChange: onChangeField("full_name"),
               })}
             />
@@ -340,7 +333,7 @@ function Perfil() {
                 minLength: { value: 2, message: "No mínimo 2 caracteres" },
                 maxLength: { value: 50, message: "No máximo 50 caracteres" },
               })}
-              value={usuario.email}
+              value={user.email}
               onChange={onChangeField("email")}
             />
           </Grid>
@@ -354,7 +347,7 @@ function Perfil() {
               erro={errors?.cpf_cnpj?.message}
               margin="normal"
               required
-              value={cpfCnpjMask(usuario.cpf_cnpj || "")}
+              value={cpfCnpjMask(user.cpf_cnpj || "")}
               inputProps={{ maxLength: 50 }}
               {...register("cpf_cnpj", {
                 required: { value: true, message: "Campo obrigatório" },
@@ -366,7 +359,7 @@ function Perfil() {
                   value: 50,
                   message: "No máximo 14 caracteres",
                 },
-                value: usuario.cpf_cnpj,
+                value: user.cpf_cnpj,
                 onChange: onChangeField("cpf_cnpj"),
               })}
             />
@@ -376,7 +369,7 @@ function Perfil() {
               <Controller
                 name={"birth_date"}
                 control={control}
-                defaultValue={usuario?.birth_date}
+                defaultValue={user?.birth_date}
                 render={({ field, fieldState: { error } }) => (
                   <DatePickerComponent
                     field={field}
@@ -384,7 +377,7 @@ function Perfil() {
                     error={error}
                     {...register("birth_date", {
                       required: { value: true, message: "Campo obrigatório" },
-                      value: usuario.birth_date,
+                      value: user.birth_date,
                       onChange: onChangeField("birth_date"),
                     })}
                   />
@@ -417,7 +410,7 @@ function Perfil() {
                   value: 50,
                   message: "No máximo 50 caracteres",
                 },
-                value: usuario.telephone,
+                value: user.telephone,
                 onChange: onChangeField("telephone"),
               })}
             />
@@ -435,8 +428,48 @@ function Perfil() {
                 minLength: { value: 2, message: "No mínimo 2 caracteres" },
                 maxLength: { value: 50, message: "No máximo 50 caracteres" },
               })}
-              value={usuario.rg}
+              value={user.rg}
               onChange={onChangeField("rg")}
+            />
+          </Grid>
+        </Grid>
+      </CardContent>
+      <Divider />
+      <CardHeader subheader="Cadastrar Permissão" />
+      <CardContent>
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={user.admin}
+                  onChange={handleBoolean("admin")}
+                />
+              }
+              label="Administrador"
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <SelectComponent
+              fullWidth
+              label="Tipo de usuário"
+              value={user.type_user}
+              defaultValue={user.type_user}
+              {...register("type_user", {
+                required: { value: true, message: "Campo obrigatório" },
+              })}
+              onChange={onChangeField("type_user")}
+              options={[
+                {
+                  value: "administrador",
+                  label: "Administrador",
+                },
+                {
+                  value: "vendedor",
+                  label: "Vendedor",
+                },
+              ]}
+              erro={errors?.type_user?.message}
             />
           </Grid>
         </Grid>
@@ -456,7 +489,7 @@ function Perfil() {
               InputProps={{
                 inputComponent: MaskedInputComponent,
                 inputProps: {
-                  value: usuario.address.cep,
+                  value: user.address.cep,
                   mask: "99999-999",
                 },
               }}
@@ -471,7 +504,7 @@ function Perfil() {
                   message: "No máximo 8 caracteres",
                 },
                 onChange: onChangeField("address.cep"),
-                onBlur: e => {
+                onBlur: (e) => {
                   checkCep(e);
                 },
               })}
@@ -494,7 +527,7 @@ function Perfil() {
                   value: 50,
                   message: "No máximo 50 caracteres",
                 },
-                value: usuario.address?.neighborhood,
+                value: user.address?.neighborhood,
                 onChange: onChangeField("address.neighborhood"),
               })}
             />
@@ -520,7 +553,7 @@ function Perfil() {
                   value: 50,
                   message: "No máximo 50 caracteres",
                 },
-                value: usuario.address?.street,
+                value: user.address?.street,
                 onChange: onChangeField("address.street"),
               })}
             />
@@ -543,7 +576,7 @@ function Perfil() {
                   value: 50,
                   message: "No máximo 50 caracteres",
                 },
-                value: usuario.address?.complement,
+                value: user.address?.complement,
                 onChange: onChangeField("address.complement"),
               })}
             />
@@ -568,7 +601,7 @@ function Perfil() {
                   value: 6,
                   message: "No máximo 50 caracteres",
                 },
-                value: usuario.address?.house_number,
+                value: user.address?.house_number,
                 onChange: onChangeField("address.house_number"),
               })}
             />
@@ -577,8 +610,8 @@ function Perfil() {
             <SelectComponent
               fullWidth
               label="País"
-              value={usuario.address.country}
-              defaultValue={usuario.address.country}
+              value={user.address.country}
+              defaultValue={user.address.country}
               {...register("address.country", {
                 required: { value: true, message: "Campo obrigatório" },
               })}
@@ -596,8 +629,8 @@ function Perfil() {
             <SelectComponent
               fullWidth
               label="Estado"
-              value={usuario.address.state}
-              defaultValue={usuario.address.state}
+              value={user.address.state}
+              defaultValue={user.address.state}
               {...register("address.state", {
                 required: { value: true, message: "Campo obrigatório" },
               })}
@@ -613,8 +646,8 @@ function Perfil() {
             <SelectComponent
               fullWidth
               label="Cidade"
-              value={usuario.address.city}
-              defaultValue={usuario.address.city}
+              value={user.address.city}
+              defaultValue={user.address.city}
               {...register("address.city", {
                 required: { value: true, message: "Campo obrigatório" },
               })}
@@ -637,7 +670,7 @@ function Perfil() {
         }}>
         <Button
           variant="contained"
-          onClick={handleSubmit(editarUser)}
+          onClick={handleSubmit(editarUsuario)}
           className="botao-enviar">
           Editar
         </Button>
@@ -646,4 +679,4 @@ function Perfil() {
   );
 }
 
-export default Perfil;
+export default EditFormUsuario;

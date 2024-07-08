@@ -10,6 +10,7 @@ import ThreePIcon from "@mui/icons-material/ThreeP";
 import CategoryIcon from '@mui/icons-material/Category';
 import WalletIcon from '@mui/icons-material/Wallet';
 import ProductionQuantityLimitsIcon from '@mui/icons-material/ProductionQuantityLimits';
+import GroupIcon from '@mui/icons-material/Group';
 import {
   List,
   ListItem,
@@ -49,6 +50,9 @@ function Sidebar({ open, onOpen, onClose }) {
 
   const irListaEstabelecimento = () => {
     navigate("/painel/estabelecimento");
+  };
+  const irListaUsuario = () => {
+    navigate("/painel/usuario");
   };
 
   const t = useMediaQuery(theme.breakpoints.up("sm"));
@@ -124,6 +128,14 @@ function Sidebar({ open, onOpen, onClose }) {
             </ListItemButton>
           </List>
         </Collapse>
+        <ListItem button onClick={irListaUsuario}>
+          <GroupIcon style={{ color: "#fff", fontSize: 28 }} />
+
+          <ListItemText
+            primary="Usuários"
+            style={{ color: "#fff", marginLeft: 20 }}
+          />
+        </ListItem>
       </List>
     </Drawer>
   );

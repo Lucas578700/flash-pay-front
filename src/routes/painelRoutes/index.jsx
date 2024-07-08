@@ -14,6 +14,9 @@ import FormCategory from "../../pages/Category/Form";
 import EditFormCategory from "../../pages/Category/EditForm";
 import ListCategory from "../../pages/Category/Listagem";
 import EditFormProduct from "../../pages/Produtos/EditForm";
+import ListaUsuario from "../../pages/Usuarios/Listagem";
+import FormUsuario from "../../pages/Usuarios/Form";
+import EditFormUsuario from "../../pages/Usuarios/EditForm";
 
 const PainelRoutes = [
   <Route
@@ -68,6 +71,17 @@ const PainelRoutes = [
     path="produto/editar/:id"
     element={<EditFormProduct />}
     key="edit-product"
+  />,
+  <Route path="usuario" element={<ListaUsuario />} key="lista-usuario" />,
+  <Route
+    path="usuario/cadastrar"
+    element={<FormUsuario />}
+    key="create-usuario"
+  />,
+  <Route
+    path="usuario/editar/:id"
+    element={<EditFormUsuario />}
+    key="edit-user"
   />,
   <Route path="perfil" element={<Perfil />} key="perfil" />,
 ];
