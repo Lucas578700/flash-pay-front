@@ -12,17 +12,17 @@ const enderecoSchema = yup.object().shape({
     .string()
     .matches(cepRegex, "CEP inválido")
     .required("CEP é obrigatório"),
-  bairro: yup.string(),
-  logradouro: yup.string().required("Logradouro é obrigatório"),
-  nr_casa: yup.number(),
-  complemento: yup.string(),
-  cidade: yup.string().required("Cidade é obrigatória"),
-  estado: yup.string().required("Estado é obrigatório"),
-  pais: yup.string().required("País é obrigatório"),
+  street: yup.string().required("Bairro é obrigatório"),
+  neighborhood: yup.string(),
+  house_number: yup.number(),
+  complement: yup.string(),
+  city: yup.string().required("Cidade é obrigatória"),
+  state: yup.string().required("Estado é obrigatório"),
+  country: yup.string().required("País é obrigatório"),
 });
 
 const userSchema = yup.object().shape({
-  nome_completo: yup.string().required("Nome é obrigatório"),
+  full_name: yup.string().required("Nome é obrigatório"),
   email: yup
     .string()
     .matches(emailRegex, "E-mail inválido")
@@ -37,14 +37,14 @@ const userSchema = yup.object().shape({
     .oneOf([yup.ref("password")], "As senhas não coincidem")
     .matches(passwordRegex, "Senha inválida")
     .required("Senha é obrigatória"),
-  data_nascimento: yup.date().required("A data de nascimento é obrigatória"),
+  birth_date: yup.date().required("A data de nascimento é obrigatória"),
   cpf_cnpj: yup
     .string()
     .matches(cpfCnpjRegex, "CPF/CNPJ é inválido")
     .required("CPF/CNPJ é obrigatório"),
-  telefone: yup.string(),
+  telephone: yup.string(),
   rg: yup.string(),
-  endereco: enderecoSchema.required("Endereço é obrigatório"),  
+  address: enderecoSchema.required("Endereço é obrigatório"),  
 });
 
 export default userSchema;

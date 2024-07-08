@@ -134,13 +134,13 @@ const SignUp = () => {
                 <Controller
                   name="birth_date"
                   control={control}
-                  render={({ field, fieldState: { error } }) => (
+                  render={({ field }) => (
                     <DatePickerComponent
                       {...field}
                       label="Data de Nascimento"
                       fullWidth
-                      error={!!errors.telephone}
-                      helperText={errors.telephone?.message}
+                      error={!!errors.birth_date}
+                      helperText={errors.birth_date?.message}
                     />
                   )}
                 />

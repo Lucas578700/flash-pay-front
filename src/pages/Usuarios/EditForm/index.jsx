@@ -8,6 +8,7 @@ import {
   Divider,
   FormControlLabel,
   Grid,
+  TextField,
 } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -15,8 +16,6 @@ import { useNavigate } from "react-router-dom";
 import MaskedInputComponent from "src/components/InputMask";
 import { ModalError, ModalSuccess, useModal } from "src/components/Modals";
 import SelectComponent from "src/components/Select";
-import TextFieldComponent from "src/components/TextField";
-import { cpfCnpjMask } from "src/functions/CnpjMask";
 import { api, routes } from "src/services/api";
 import extractErrorDetails from "src/utils/extractErrorDetails";
 
@@ -50,8 +49,6 @@ const initialState = {
     country: "",
   },
   admin: false,
-  password: "",
-  confirm_password: "",
   type_user: "",
 };
 
@@ -61,6 +58,10 @@ function EditFormUsuario() {
   const [paises, setPaises] = useState([]);
   const [estados, setEstados] = useState([]);
   const [cidades, setCidades] = useState([]);
+
+  const [pais, setPais] = useState("");
+  const [estado, setEstado] = useState("");
+  const [cidade, setCidade] = useState("");
 
   const { id } = useParams();
 
@@ -73,25 +74,23 @@ function EditFormUsuario() {
     handleSubmit,
     formState: { errors },
     setValue,
+    getValues,
+    reset,
   } = useForm({
     mode: "all",
-    defaultValues: initialState
+    defaultValues: initialState,
   });
 
   const onChangeField = useCallback(
-    (name) => (e) => {
+    name => e => {
       const { value } = e.target;
-
-      setUser(prevProfessor =>
-        setNestedValue({ ...prevProfessor }, name, value)
-      );
       setValue(name, value);
     },
     [setUser, setValue]
   );
 
   const handleBoolean = useCallback(
-    (name) => (e) => {
+    name => e => {
       const { checked } = e.target;
 
       setUser(prevProfessor =>
@@ -105,41 +104,39 @@ function EditFormUsuario() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const [
-        paisResponse,
-        estadoResponse,
-        cidadeResponse,
-        userResponse,
-      ] = await Promise.all([
-        api.get(`${routes.country}`),
-        api.get(`${routes.state}`),
-        api.get(`${routes.city}?limit=5570`),
-        api.get(`${routes.user}${id}/`),
-      ]);
+      const [paisResponse, estadoResponse, cidadeResponse, userResponse] =
+        await Promise.all([
+          api.get(`${routes.country}`),
+          api.get(`${routes.state}`),
+          api.get(`${routes.city}?limit=5570`),
+          api.get(`${routes.user}${id}/`),
+        ]);
 
       setPaises(paisResponse.data.results || []);
       setEstados(estadoResponse.data.results || []);
       setCidades(cidadeResponse.data.results || []);
 
-      const {
-        birth_date,
-        address,
-        admin,
-        ...user_change
-      } = userResponse.data || {};
+      const { birth_date, address, admin, ...user_change } =
+        userResponse.data || {};
 
-      const data_format = dayjs(birth_date || new Date("1998-1-1")).format("DD-MM-YYYY");
-      setUser({
+      const data_format = dayjs(birth_date || new Date("1998-1-1")).format(
+        "DD-MM-YYYY"
+      );
+      reset({
         ...user_change,
         birth_date: new Date(data_format),
         admin: admin,
         address: {
           ...address,
-          country: address?.country?.id || "",
-          state: address?.state?.id || "",
-          city: address?.city?.id || "",
+          country: address?.country || "",
+          state: address?.state || "",
+          city: address?.city || "",
         },
       });
+
+      setPais(address?.country || "");
+      setEstado(address?.state || "");
+      setCidade(address?.city || "");
 
       setLoading(false);
     } catch (e) {
@@ -162,7 +159,7 @@ function EditFormUsuario() {
     fetchData();
   }, []);
 
-  const checkCep = async (e) => {
+  const checkCep = async e => {
     const cep = e.target.value.replace(/\D/g, "");
     if (cep.length === 8) {
       await searchCep(cep);
@@ -180,7 +177,8 @@ function EditFormUsuario() {
           paises.find(pais => pais.name === "Brasil")?.id.toString() ?? "";
 
         const estado =
-          estados.find(estado => estado.acronym.includes(uf))?.id.toString() ?? "";
+          estados.find(estado => estado.acronym.includes(uf))?.id.toString() ??
+          "";
 
         const cidade =
           cidades
@@ -192,14 +190,8 @@ function EditFormUsuario() {
         setValue("address.city", cidade);
         setValue("address.state", estado);
         setValue("address.street", logradouro || user.address.street);
-        setValue(
-          "address.neighborhood",
-          bairro || user.address.neighborhood
-        );
-        setValue(
-          "address.complement",
-          complemento || user.address.complement
-        );
+        setValue("address.neighborhood", bairro || user.address.neighborhood);
+        setValue("address.complement", complemento || user.address.complement);
 
         setUser(prevProfessor => ({
           ...prevProfessor,
@@ -232,8 +224,19 @@ function EditFormUsuario() {
   );
 
   function formatUser() {
-    const { birth_date, telephone, address, admin, ...userChange } =
-      user;
+    const values = getValues();
+    const { birth_date, telephone, address, admin, ...userChange } = values;
+
+    const isEmptyOrNull = value => {
+      return value === null || value === undefined || value === "";
+    };
+
+    const cleanedAddress = Object.keys(address)
+      .filter(key => !isEmptyOrNull(address[key]))
+      .reduce((obj, key) => {
+        obj[key] = address[key];
+        return obj;
+      }, {});
 
     return {
       ...userChange,
@@ -241,7 +244,7 @@ function EditFormUsuario() {
       telephone: telephone ? telephone.replace(/\D/g, "") : "",
       admin: admin,
       address: {
-        ...address,
+        ...cleanedAddress,
         cep: address.cep.replace(/\D/g, ""),
       },
     };
@@ -260,7 +263,7 @@ function EditFormUsuario() {
           title: "Sucesso",
           message: "Usuário editado com sucesso",
           textConfirmButton: "Ok",
-          onClose: () => navigate("/painel/user"),
+          onClose: () => navigate("/painel"),
         },
       });
     } catch (e) {
@@ -288,96 +291,43 @@ function EditFormUsuario() {
 
   return (
     <Card>
-      <CardHeader title="Usuários" subheader="Editar Usuário" />
+      <CardHeader title="Usuários" subheader="Cadastrar Usuário" />
       <Divider />
       <CardContent>
         <Grid container spacing={2}>
           <Grid item xs={6}>
-            <TextFieldComponent
-              variant="outlined"
-              label="Nome"
-              placeholder="Nome do usuário"
-              erro={errors?.full_name?.message}
-              margin="normal"
-              required
-              inputProps={{ maxLength: 50 }}
-              {...register("full_name", {
-                required: { value: true, message: "Campo obrigatório" },
-                minLength: {
-                  value: 2,
-                  message: "No minimo 2 caracteres",
-                },
-                maxLength: {
-                  value: 50,
-                  message: "No máximo 50 caracteres",
-                },
-                value: user.full_name,
-                onChange: onChangeField("full_name"),
-              })}
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <TextFieldComponent
-              variant="outlined"
-              label="E-mail"
-              placeholder="E-mail do usuário"
-              erro={errors?.email?.message}
-              margin="normal"
-              type="email"
-              required
-              inputProps={{ maxLength: 50 }}
-              {...register("email", {
-                required: { value: true, message: "Campo obrigatório" },
-                minLength: { value: 2, message: "No mínimo 2 caracteres" },
-                maxLength: { value: 50, message: "No máximo 50 caracteres" },
-              })}
-              value={user.email}
-              onChange={onChangeField("email")}
-            />
-          </Grid>
-        </Grid>
-        <Grid container spacing={2}>
-          <Grid item xs={6}>
-            <TextFieldComponent
-              variant="outlined"
-              label="CPF/CNPJ"
-              placeholder="CPF/CNPJ do usuário"
-              erro={errors?.cpf_cnpj?.message}
-              margin="normal"
-              required
-              value={cpfCnpjMask(user.cpf_cnpj || "")}
-              inputProps={{ maxLength: 50 }}
-              {...register("cpf_cnpj", {
-                required: { value: true, message: "Campo obrigatório" },
-                minLength: {
-                  value: 2,
-                  message: "No minimo 11 caracteres",
-                },
-                maxLength: {
-                  value: 50,
-                  message: "No máximo 14 caracteres",
-                },
-                value: user.cpf_cnpj,
-                onChange: onChangeField("cpf_cnpj"),
-              })}
-            />
+            <div style={{ marginTop: 16 }}>
+              <Controller
+                name="full_name"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    variant="outlined"
+                    label="Nome"
+                    required
+                    fullWidth
+                    error={!!errors.full_name}
+                    helperText={errors.full_name?.message}
+                  />
+                )}
+              />
+            </div>
           </Grid>
           <Grid item xs={6}>
             <div style={{ marginTop: 16 }}>
               <Controller
-                name={"birth_date"}
+                name="email"
                 control={control}
-                defaultValue={user?.birth_date}
-                render={({ field, fieldState: { error } }) => (
-                  <DatePickerComponent
-                    field={field}
-                    label="Data de nascimento"
-                    error={error}
-                    {...register("birth_date", {
-                      required: { value: true, message: "Campo obrigatório" },
-                      value: user.birth_date,
-                      onChange: onChangeField("birth_date"),
-                    })}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    variant="outlined"
+                    label="E-mail"
+                    required
+                    fullWidth
+                    error={!!errors.email}
+                    helperText={errors.email?.message}
                   />
                 )}
               />
@@ -386,49 +336,91 @@ function EditFormUsuario() {
         </Grid>
         <Grid container spacing={2}>
           <Grid item xs={6}>
-            <TextFieldComponent
-              variant="outlined"
-              label="Telefone"
-              placeholder="Telefone do usuário"
-              erro={errors?.telephone?.message}
-              margin="normal"
-              InputProps={{
-                inputComponent: MaskedInputComponent,
-                inputProps: {
-                  mask: "99 9 9999 9999",
-                },
-              }}
-              {...register("telephone", {
-                required: { value: true, message: "Campo obrigatório" },
-                minLength: {
-                  value: 2,
-                  message: "No minimo 2 caracteres",
-                },
-                maxLength: {
-                  value: 50,
-                  message: "No máximo 50 caracteres",
-                },
-                value: user.telephone,
-                onChange: onChangeField("telephone"),
-              })}
-            />
+            <div style={{ marginTop: 16 }}>
+              <Controller
+                name="cpf_cnpj"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    variant="outlined"
+                    label="CPF/CNPJ do usuário"
+                    required
+                    fullWidth
+                    InputProps={{
+                      inputComponent: MaskedInputComponent,
+                      inputProps: {
+                        mask: "999.999.999-99",
+                      },
+                    }}
+                    error={!!errors.email}
+                    helperText={errors.email?.message}
+                  />
+                )}
+              />
+            </div>
           </Grid>
           <Grid item xs={6}>
-            <TextFieldComponent
-              variant="outlined"
-              label="RG"
-              placeholder="RG do professor"
-              erro={errors?.rg?.message}
-              margin="normal"
-              inputProps={{ maxLength: 50 }}
-              {...register("rg", {
-                required: { value: true, message: "Campo obrigatório" },
-                minLength: { value: 2, message: "No mínimo 2 caracteres" },
-                maxLength: { value: 50, message: "No máximo 50 caracteres" },
-              })}
-              value={user.rg}
-              onChange={onChangeField("rg")}
-            />
+            <div style={{ marginTop: 16 }}>
+              <Controller
+                name="birth_date"
+                control={control}
+                render={({ field }) => (
+                  <DatePickerComponent
+                    {...field}
+                    label="Data de Nascimento"
+                    required
+                    fullWidth
+                    error={!!errors.birth_date}
+                    helperText={errors.birth_date?.message}
+                  />
+                )}
+              />
+            </div>
+          </Grid>
+        </Grid>
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <div style={{ marginTop: 16 }}>
+              <Controller
+                name="telephone"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    variant="outlined"
+                    label="Telefone do usuário"
+                    fullWidth
+                    InputProps={{
+                      inputComponent: MaskedInputComponent,
+                      inputProps: {
+                        mask: "99 9 9999 9999",
+                      },
+                    }}
+                    error={!!errors.telephone}
+                    helperText={errors.telephone?.message}
+                  />
+                )}
+              />
+            </div>
+          </Grid>
+          <Grid item xs={6}>
+            <div style={{ marginTop: 16 }}>
+              <Controller
+                name="rg"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    variant="outlined"
+                    label="RG do usuário"
+                    fullWidth
+                    error={!!errors.rg}
+                    helperText={errors.rg?.message}
+                  />
+                )}
+              />
+            </div>
           </Grid>
         </Grid>
       </CardContent>
@@ -438,12 +430,7 @@ function EditFormUsuario() {
         <Grid container spacing={2}>
           <Grid item xs={6}>
             <FormControlLabel
-              control={
-                <Checkbox
-                  checked={user.admin}
-                  onChange={handleBoolean("admin")}
-                />
-              }
+              control={<Checkbox onChange={handleBoolean("admin")} />}
               label="Administrador"
             />
           </Grid>
@@ -451,8 +438,6 @@ function EditFormUsuario() {
             <SelectComponent
               fullWidth
               label="Tipo de usuário"
-              value={user.type_user}
-              defaultValue={user.type_user}
               {...register("type_user", {
                 required: { value: true, message: "Campo obrigatório" },
               })}
@@ -467,157 +452,129 @@ function EditFormUsuario() {
                   label: "Vendedor",
                 },
               ]}
+              defaultValue="vendedor"
               erro={errors?.type_user?.message}
             />
           </Grid>
         </Grid>
       </CardContent>
       <Divider />
-      <CardHeader subheader="Editar Endereço" />
+      <CardHeader subheader="Cadastrar Endereço" />
       <CardContent>
         <Grid container spacing={2}>
           <Grid item xs={6}>
-            <TextFieldComponent
-              variant="outlined"
-              label="Cep"
-              placeholder="Cep do usuário"
-              erro={errors?.address?.cep?.message}
-              margin="normal"
-              required
-              InputProps={{
-                inputComponent: MaskedInputComponent,
-                inputProps: {
-                  value: user.address.cep,
-                  mask: "99999-999",
-                },
-              }}
-              {...register("address.cep", {
-                required: { value: true, message: "Campo obrigatório" },
-                minLength: {
-                  value: 8,
-                  message: "No minimo 8 caracteres",
-                },
-                maxLength: {
-                  value: 8,
-                  message: "No máximo 8 caracteres",
-                },
-                onChange: onChangeField("address.cep"),
-                onBlur: (e) => {
-                  checkCep(e);
-                },
-              })}
+            <Controller
+              name="address.cep"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  variant="outlined"
+                  label="Cep do usuário"
+                  required
+                  fullWidth
+                  InputProps={{
+                    inputComponent: MaskedInputComponent,
+                    inputProps: {
+                      mask: "99999-999",
+                    },
+                  }}
+                  error={!!errors.address?.cep}
+                  helperText={errors.address?.cep?.message}
+                  onBlur={checkCep}
+                />
+              )}
             />
           </Grid>
           <Grid item xs={6}>
-            <TextFieldComponent
-              variant="outlined"
-              label="Bairro"
-              placeholder="Bairro do usuário"
-              erro={errors?.address?.neighborhood?.message}
-              margin="normal"
-              inputProps={{ maxLength: 50 }}
-              {...register("address.neighborhood", {
-                minLength: {
-                  value: 2,
-                  message: "No minimo 8 caracteres",
-                },
-                maxLength: {
-                  value: 50,
-                  message: "No máximo 50 caracteres",
-                },
-                value: user.address?.neighborhood,
-                onChange: onChangeField("address.neighborhood"),
-              })}
+            <Controller
+              name="address.neighborhood"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  variant="outlined"
+                  label="Bairro do usuário"
+                  required
+                  fullWidth
+                  error={!!errors.address?.neighborhood}
+                  helperText={errors.address?.neighborhood?.message}
+                />
+              )}
             />
           </Grid>
         </Grid>
         <Grid container spacing={2}>
           <Grid item xs={6}>
-            <TextFieldComponent
-              variant="outlined"
-              label="Logradouro"
-              placeholder="Logradouro"
-              erro={errors?.address?.street?.message}
-              margin="normal"
-              required
-              inputProps={{ maxLength: 50 }}
-              {...register("address.street", {
-                required: { value: true, message: "Campo obrigatório" },
-                minLength: {
-                  value: 2,
-                  message: "No minimo 8 caracteres",
-                },
-                maxLength: {
-                  value: 50,
-                  message: "No máximo 50 caracteres",
-                },
-                value: user.address?.street,
-                onChange: onChangeField("address.street"),
-              })}
-            />
+            <div style={{ marginTop: 16 }}>
+              <Controller
+                name="address.street"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    variant="outlined"
+                    label="Logradouro do usuário"
+                    fullWidth
+                    error={!!errors.address?.street}
+                    helperText={errors.address?.street?.message}
+                  />
+                )}
+              />
+            </div>
           </Grid>
           <Grid item xs={6}>
-            <TextFieldComponent
-              variant="outlined"
-              label="complemento"
-              placeholder="Complemento"
-              erro={errors?.address?.complement?.message}
-              margin="normal"
-              inputProps={{ maxLength: 50 }}
-              {...register("address.complement", {
-                required: { value: true, message: "Campo obrigatório" },
-                minLength: {
-                  value: 2,
-                  message: "No minimo 8 caracteres",
-                },
-                maxLength: {
-                  value: 50,
-                  message: "No máximo 50 caracteres",
-                },
-                value: user.address?.complement,
-                onChange: onChangeField("address.complement"),
-              })}
-            />
+            <div style={{ marginTop: 16 }}>
+              <Controller
+                name="address.complement"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    variant="outlined"
+                    label="Complemento do usuário"
+                    fullWidth
+                    error={!!errors.address?.complement}
+                    helperText={errors.address?.complement?.message}
+                  />
+                )}
+              />
+            </div>
           </Grid>
         </Grid>
         <Grid container spacing={2}>
           <Grid item xs={6}>
-            <TextFieldComponent
-              variant="outlined"
-              label="Nr casa"
-              placeholder="Nr Casa"
-              erro={errors?.address?.house_number?.message}
-              margin="normal"
-              type="number"
-              inputProps={{ maxLength: 50 }}
-              {...register("address.house_number", {
-                minLength: {
-                  value: 2,
-                  message: "No minimo 8 caracteres",
-                },
-                maxLength: {
-                  value: 6,
-                  message: "No máximo 50 caracteres",
-                },
-                value: user.address?.house_number,
-                onChange: onChangeField("address.house_number"),
-              })}
-            />
+            <div style={{ marginTop: 16 }}>
+              <Controller
+                name="address.house_number"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    variant="outlined"
+                    label="Nr da casa"
+                    fullWidth
+                    error={!!errors.address?.house_number}
+                    helperText={errors.address?.house_number?.message}
+                  />
+                )}
+              />
+            </div>
           </Grid>
           <Grid item xs={6}>
             <SelectComponent
               fullWidth
               label="País"
-              value={user.address.country}
-              defaultValue={user.address.country}
               {...register("address.country", {
                 required: { value: true, message: "Campo obrigatório" },
               })}
+              required
               onChange={onChangeField("address.country")}
               options={paises.map(pais => ({
                 value: `${pais.id}`,
                 label: pais.name,
               }))}
+              defaultValue={pais}
               erro={errors?.address?.country?.message}
             />
           </Grid>
@@ -627,16 +584,16 @@ function EditFormUsuario() {
             <SelectComponent
               fullWidth
               label="Estado"
-              value={user.address.state}
-              defaultValue={user.address.state}
               {...register("address.state", {
                 required: { value: true, message: "Campo obrigatório" },
               })}
+              required
               onChange={onChangeField("address.state")}
               options={estados.map(estado => ({
                 value: `${estado.id}`,
                 label: estado.name,
               }))}
+              defaultValue={estado}
               erro={errors?.address?.state?.message}
             />
           </Grid>
@@ -644,16 +601,16 @@ function EditFormUsuario() {
             <SelectComponent
               fullWidth
               label="Cidade"
-              value={user.address.city}
-              defaultValue={user.address.city}
               {...register("address.city", {
                 required: { value: true, message: "Campo obrigatório" },
               })}
+              required
               onChange={onChangeField("address.city")}
               options={cidades.map(cidade => ({
                 value: `${cidade.id}`,
                 label: cidade.name,
               }))}
+              defaultValue={cidade}
               erro={errors?.address?.city?.message}
             />
           </Grid>

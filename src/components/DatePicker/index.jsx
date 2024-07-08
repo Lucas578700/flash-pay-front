@@ -4,7 +4,7 @@ import ptBrLocale from "date-fns/locale/pt-BR";
 import React from "react";
 
 const DatePickerComponent = React.forwardRef(
-  ({ label, field, error = "" }, ref) => {
+  ({ label, error, helperText, field }, ref) => {
     return (
       <LocalizationProvider
         dateAdapter={AdapterDateFns}
@@ -13,10 +13,13 @@ const DatePickerComponent = React.forwardRef(
           {...field}
           label={label}
           ref={ref}
+          defaultValue={new Date("1998-1-1")}
           slotProps={{
             textField: {
               fullWidth: true,
               variant: "outlined",
+              error: error,
+              helperText: helperText,
             },
           }}
         />
