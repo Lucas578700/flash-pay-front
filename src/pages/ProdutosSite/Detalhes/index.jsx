@@ -66,38 +66,20 @@ const Produtos = () => {
   }
 
   return (
-    // <Container maxWidth="xl">
-    //   <Toolbar>
-    //     <Typography variant="h4" color="primary">
-    //       Produtos
-    //     </Typography>
-    //   </Toolbar>
-    //   <Box sx={{ marginTop: 4 }}>
-    //     {products.map(product => (
-    //       <Grid item key={String(product.id)}>
-    //         <CustomCardProduct product={product} />
-    //       </Grid>
-    //     ))}
-    //   </Box>
-    // </Container>
-
     <Container maxWidth="xl">
-  <Toolbar>
-    <Typography variant="h4" color="primary">
-      Produtos
-    </Typography>
-  </Toolbar>
-  <Box sx={{ marginTop: 4 }}>
-    <Grid container spacing={4}>
-      {products.map(product => (
-        <Grid item xs={12} sm={6} md={4} lg={3} key={String(product.id)}>
-          <CustomCardProduct product={product} />
-        </Grid>
-      ))}
-    </Grid>
-  </Box>
-</Container>
-
+      <Toolbar>
+        <Typography variant="h4" color="primary">
+          Produtos
+        </Typography>
+      </Toolbar>
+      <Box sx={{ marginTop: 4 }}>
+        {products.map(product => (
+          <Grid item key={String(product.id)}>
+            <CustomCardProduct product={product} />
+          </Grid>
+        ))}
+      </Box>
+    </Container>
   );
 };
 
