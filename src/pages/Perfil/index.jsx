@@ -156,14 +156,6 @@ function Perfil() {
     [setValue]
   );
 
-  const handleBoolean = useCallback(
-    name => e => {
-      const { checked } = e.target;
-      setValue(name, checked);
-    },
-    [setValue]
-  );
-
   const checkCep = async e => {
     const cep = e.target.value.replace(/\D/g, "");
     if (cep.length === 8) {

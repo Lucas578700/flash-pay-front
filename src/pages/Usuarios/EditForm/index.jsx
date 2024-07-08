@@ -62,6 +62,7 @@ function EditFormUsuario() {
   const [pais, setPais] = useState("");
   const [estado, setEstado] = useState("");
   const [cidade, setCidade] = useState("");
+  const [type_user, setTypeUser] = useState("");
 
   const { id } = useParams();
 
@@ -112,7 +113,7 @@ function EditFormUsuario() {
       setEstados(estadoResponse.data.results || []);
       setCidades(cidadeResponse.data.results || []);
 
-      const { birth_date, address, admin, ...user_change } =
+      const { birth_date, address, admin, type_user, ...user_change } =
         userResponse.data || {};
 
       const data_format = dayjs(birth_date || new Date("1998-1-1")).format(
@@ -120,6 +121,7 @@ function EditFormUsuario() {
       );
       reset({
         ...user_change,
+        type_user: type_user,
         birth_date: new Date(data_format),
         admin: admin,
         address: {
@@ -133,6 +135,7 @@ function EditFormUsuario() {
       setPais(address?.country || "");
       setEstado(address?.state || "");
       setCidade(address?.city || "");
+      setTypeUser(type_user.toLowerCase());
 
       setLoading(false);
     } catch (e) {
@@ -448,7 +451,7 @@ function EditFormUsuario() {
                   label: "Vendedor",
                 },
               ]}
-              defaultValue="vendedor"
+              defaultValue={type_user}
               erro={errors?.type_user?.message}
             />
           </Grid>
