@@ -17,8 +17,6 @@ const DatePickerComponent = React.forwardRef(
             textField: {
               fullWidth: true,
               variant: "outlined",
-              error: !!error,
-              helperText: error?.message,
             },
           }}
         />

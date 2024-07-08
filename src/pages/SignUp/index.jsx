@@ -7,6 +7,7 @@ import {
   Box,
   Button,
   Container,
+  Grid,
   Paper,
   TextField,
   Typography,
@@ -32,7 +33,7 @@ const SignUp = () => {
     defaultValues: {
       full_name: "",
       email: "",
-      birth_date: "",
+      birth_date: new Date("1998-1-1"),
       telephone: "",
       rg: "",
       cpf_cnpj: "",
@@ -55,6 +56,8 @@ const SignUp = () => {
       cpf_cnpj: "",
       password: "",
     });
+    console.log("AAA");
+    navigate("/");
   };
 
   useEffect(() => {
@@ -72,13 +75,10 @@ const SignUp = () => {
           flexDirection: "column",
           alignItems: "center",
         }}>
-
-        
-        
         <Title2 variant="h4" color="primary">
           Flash Pay
         </Title2>
-        <Typography variant="subtitle2" color="primary"> 
+        <Typography variant="subtitle2" color="primary">
           Cadastre-se
         </Typography>
         <Paper
@@ -90,129 +90,131 @@ const SignUp = () => {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            width: "40%",
+            width: "60%",
             gap: 2,
             border: `1px solid #${Colors.primary}`,
           }}>
           <form onSubmit={handleSubmit(onSubmit)}>
-          <Controller
-              name="full_name"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  variant="outlined"
-                  label="Nome"
-                  required
-                  fullWidth
-                  error={!!errors.full_name}
-                  helperText={errors.full_name?.message}
-                  sx={{ marginBottom: 2 }}
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <Controller
+                  name="full_name"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      variant="outlined"
+                      label="Nome"
+                      required
+                      fullWidth
+                      error={!!errors.full_name}
+                      helperText={errors.full_name?.message}
+                    />
+                  )}
                 />
-              )}
-              />
-
-            <Controller
-              name="email"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  variant="outlined"
-                  label="Login"
-                  required
-                  fullWidth
-                  error={!!errors.email}
-                  helperText={errors.email?.message}
-                  sx={{ marginBottom: 2 }}
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Controller
+                  name="email"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      variant="outlined"
+                      label="E-mail"
+                      required
+                      fullWidth
+                      error={!!errors.email}
+                      helperText={errors.email?.message}
+                    />
+                  )}
                 />
-              )}
-            />
-
-              <Controller
-                name="birth_date"
-                control={control}
-                render={({ field }) => (
-                  <DatePickerComponent
-                    {...field}
-                    label="Data de Nascimento"
-                    required
-                    fullWidth
-                    error={!!errors.birth_date}
-                    helperText={errors.birth_date?.message}
-                    sx={{ marginBottom: 2 }}
-                  />
-                )}
-              />
-
-            <Controller
-              name="telephone"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  variant="outlined"
-                  label="Telefone"
-                  required
-                  fullWidth
-                  error={!!errors.telephone}
-                  helperText={errors.telephone?.message}
-                  sx={{ marginBottom: 2 }}
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Controller
+                  name="birth_date"
+                  control={control}
+                  render={({ field, fieldState: { error } }) => (
+                    <DatePickerComponent
+                      {...field}
+                      label="Data de Nascimento"
+                      fullWidth
+                      error={!!errors.telephone}
+                      helperText={errors.telephone?.message}
+                    />
+                  )}
                 />
-              )}
-            />
-
-            <Controller
-              name="rg"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  variant="outlined"
-                  label="RG"
-                  required
-                  fullWidth
-                  error={!!errors.rg}
-                  helperText={errors.rg?.message}
-                  sx={{ marginBottom: 2 }}
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Controller
+                  name="telephone"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      variant="outlined"
+                      label="Telefone"
+                      required
+                      fullWidth
+                      error={!!errors.telephone}
+                      helperText={errors.telephone?.message}
+                    />
+                  )}
                 />
-              )}
-            />
-
-            <Controller
-              name="cpf_cnpj"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  variant="outlined"
-                  label="CPF/CNPJ"
-                  required
-                  fullWidth
-                  error={!!errors.cpf_cnpj}
-                  helperText={errors.cpf_cnpj?.message}
-                  sx={{ marginBottom: 2 }}
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Controller
+                  name="rg"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      variant="outlined"
+                      label="RG"
+                      required
+                      fullWidth
+                      error={!!errors.rg}
+                      helperText={errors.rg?.message}
+                    />
+                  )}
                 />
-              )}
-            />
-
-            <Controller
-              name="password"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  variant="outlined"
-                  label="Senha"
-                  required
-                  fullWidth
-                  type="password"
-                  error={!!errors.password}
-                  helperText={errors.password?.message}
-                  sx={{ marginBottom: 2 }}
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Controller
+                  name="cpf_cnpj"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      variant="outlined"
+                      label="CPF/CNPJ"
+                      required
+                      fullWidth
+                      error={!!errors.cpf_cnpj}
+                      helperText={errors.cpf_cnpj?.message}
+                    />
+                  )}
                 />
-              )}
-            />
+              </Grid>
+              <Grid item xs={12}>
+                <Controller
+                  name="password"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      variant="outlined"
+                      label="Senha"
+                      required
+                      fullWidth
+                      type="password"
+                      error={!!errors.password}
+                      helperText={errors.password?.message}
+                    />
+                  )}
+                />
+              </Grid>
+            </Grid>
             <Container
               disableGutters
               sx={{
@@ -233,7 +235,7 @@ const SignUp = () => {
                 variant="contained"
                 type="submit"
                 sx={{ borderRadius: 25, backgroundColor: Colors.primary }}>
-                Entrar
+                Registrar-me
               </Button>
             </Container>
           </form>

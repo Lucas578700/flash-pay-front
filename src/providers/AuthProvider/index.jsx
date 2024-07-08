@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { AuthContext } from "src/hooks/AuthContext";
 import useAPIError from "src/hooks/useAPIError";
-import { api } from "../../services/api";
+import { api, routes } from "../../services/api";
 
 import LinearLoader from "src/components/LinearProgres";
+import formatDate from "src/functions/FormatDate";
 import extractErrorDetails from "src/utils/extractErrorDetails";
 
 export const AuthProvider = ({ children }) => {
@@ -49,24 +50,23 @@ export const AuthProvider = ({ children }) => {
     setLoadingAuth(false);
   }, []);
 
-  const signUp = (fullname, email, password, cellphone, adress) => {
+  const signUp = async (data) => {
     const usersStorage = JSON.parse(localStorage.getItem("@user"));
 
-    const hasUser = usersStorage?.filter((user) => user.email === email);
+    const hasUser = usersStorage?.filter(user => user.email === data.email);
 
     if (hasUser?.length) {
       return "Já tem uma conta com esse E-mail";
     }
 
-    let newUser;
-
-    if (usersStorage) {
-      newUser = [...usersStorage, { fullname, email, password, cellphone, adress }];
-    } else {
-      newUser = [{ fullname, email, password, cellphone, adress }];
+    try {
+      await api.post(`${routes.user}`, {
+        ...data,
+        birth_date: formatDate(data.birth_date),
+      });
+    } catch (e) {
+      addError(extractErrorDetails(e), e.response.status);
     }
-
-    localStorage.setItem("@user", JSON.stringify(newUser));
 
     return;
   };
@@ -90,7 +90,13 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user: data?.user, loading: loadingAuth, signIn, signOut, signUp }}>
+      value={{
+        user: data?.user,
+        loading: loadingAuth,
+        signIn,
+        signOut,
+        signUp,
+      }}>
       {children}
     </AuthContext.Provider>
   );

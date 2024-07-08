@@ -8,7 +8,7 @@ const SiteRoutes = [
   <Route index element={<Home />} key="home" />,
   <Route path="/produtos/:id" element={<Produtos />} key="produtos" />,
   <Route path="/login" element = {<SignIn />} key="signin" />,
-  <Route path="/signup" element = {<SignUp />} key="signup" />,
+  <Route path="/registrar-me" element = {<SignUp />} key="signup" />,
 ];
 
 export default SiteRoutes;
