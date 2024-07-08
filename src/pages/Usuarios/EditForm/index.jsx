@@ -86,19 +86,15 @@ function EditFormUsuario() {
       const { value } = e.target;
       setValue(name, value);
     },
-    [setUser, setValue]
+    [setValue]
   );
 
   const handleBoolean = useCallback(
     name => e => {
       const { checked } = e.target;
-
-      setUser(prevProfessor =>
-        setNestedValue({ ...prevProfessor }, name, checked)
-      );
       setValue(name, checked);
     },
-    [setUser, setValue]
+    [setValue]
   );
 
   const fetchData = useCallback(async () => {
@@ -291,7 +287,7 @@ function EditFormUsuario() {
 
   return (
     <Card>
-      <CardHeader title="Usuários" subheader="Cadastrar Usuário" />
+      <CardHeader title="Usuários" subheader="Editar Usuário" />
       <Divider />
       <CardContent>
         <Grid container spacing={2}>
@@ -425,7 +421,7 @@ function EditFormUsuario() {
         </Grid>
       </CardContent>
       <Divider />
-      <CardHeader subheader="Cadastrar Permissão" />
+      <CardHeader subheader="Editar Permissão" />
       <CardContent>
         <Grid container spacing={2}>
           <Grid item xs={6}>
@@ -459,7 +455,7 @@ function EditFormUsuario() {
         </Grid>
       </CardContent>
       <Divider />
-      <CardHeader subheader="Cadastrar Endereço" />
+      <CardHeader subheader="Editar Endereço" />
       <CardContent>
         <Grid container spacing={2}>
           <Grid item xs={6}>
