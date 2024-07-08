@@ -2,15 +2,11 @@
 import { useState } from "react";
 import LocalLibraryIcon from "@mui/icons-material/LocalLibrary";
 import CabinIcon from "@mui/icons-material/Cabin";
-import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
-import SchoolIcon from "@mui/icons-material/School";
-import ThreePIcon from "@mui/icons-material/ThreeP";
-import CategoryIcon from '@mui/icons-material/Category';
-import WalletIcon from '@mui/icons-material/Wallet';
-import ProductionQuantityLimitsIcon from '@mui/icons-material/ProductionQuantityLimits';
-import GroupIcon from '@mui/icons-material/Group';
+import CategoryIcon from "@mui/icons-material/Category";
+import ProductionQuantityLimitsIcon from "@mui/icons-material/ProductionQuantityLimits";
+import GroupIcon from "@mui/icons-material/Group";
 import {
   List,
   ListItem,
@@ -24,9 +20,11 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import { useNavigate } from "react-router-dom";
 import AMFIcon from "../../assets/logo.png";
 import { AMFIconImage, Drawer, TextoAMF } from "./styles";
+import { useAuth } from "../../hooks/AuthContext";
 
 function Sidebar({ open, onOpen, onClose }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const theme = useTheme();
 
   const [openSubmenuProduto, setOpenProduto] = useState(false);
@@ -84,14 +82,16 @@ function Sidebar({ open, onOpen, onClose }) {
             style={{ color: "#fff", marginLeft: 20 }}
           />
         </ListItem>
-        <ListItem button onClick={irListaUniversidade}>
-          <LocalLibraryIcon style={{ color: "#fff", fontSize: 28 }} />
+        {user && user.type_user == "Administrador" && (
+          <ListItem button onClick={irListaUniversidade}>
+            <LocalLibraryIcon style={{ color: "#fff", fontSize: 28 }} />
 
-          <ListItemText
-            primary="Universidades"
-            style={{ color: "#fff", marginLeft: 20 }}
-          />
-        </ListItem>
+            <ListItemText
+              primary="Universidades"
+              style={{ color: "#fff", marginLeft: 20 }}
+            />
+          </ListItem>
+        )}
         <ListItem button onClick={irListaEstabelecimento}>
           <CabinIcon style={{ color: "#fff", fontSize: 28 }} />
 
@@ -101,7 +101,9 @@ function Sidebar({ open, onOpen, onClose }) {
           />
         </ListItem>
         <ListItemButton onClick={handleClickProduto}>
-          <ProductionQuantityLimitsIcon style={{ color: "#fff", fontSize: 28 }} />
+          <ProductionQuantityLimitsIcon
+            style={{ color: "#fff", fontSize: 28 }}
+          />
           <ListItemText
             primary="Produtos"
             style={{ color: "#fff", marginLeft: 20 }}
@@ -122,12 +124,15 @@ function Sidebar({ open, onOpen, onClose }) {
             </ListItemButton>
             <ListItemButton sx={{ pl: 4 }} onClick={irListaProduto}>
               <ListItemIcon>
-                <ProductionQuantityLimitsIcon style={{ color: "#fff", fontSize: 28 }} />
+                <ProductionQuantityLimitsIcon
+                  style={{ color: "#fff", fontSize: 28 }}
+                />
               </ListItemIcon>
               <ListItemText primary="Produto" style={{ color: "#fff" }} />
             </ListItemButton>
           </List>
         </Collapse>
+        {user && user.type_user == "Administrador" && (
         <ListItem button onClick={irListaUsuario}>
           <GroupIcon style={{ color: "#fff", fontSize: 28 }} />
 
@@ -136,6 +141,7 @@ function Sidebar({ open, onOpen, onClose }) {
             style={{ color: "#fff", marginLeft: 20 }}
           />
         </ListItem>
+        )}
       </List>
     </Drawer>
   );

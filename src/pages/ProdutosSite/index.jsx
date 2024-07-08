@@ -3,38 +3,42 @@ import { Container, Grid } from "@mui/material";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import CustomCard from "src/components/Card";
+import CustomCardProduct from "../../components/CardProduct";
 import { ModalError, useModal } from "src/components/Modals";
 import { api, routes } from "src/services/api";
+import {useParams } from "react-router-dom";
 import LinearLoader from "src/components/LinearProgres";
 
-const Home = () => {
-  const [shoppes, setShoppes] = useState([]);
+const Produtos = () => {
+  const [products, setProducts] = useState([]);
   const [totalRows, setTotalRows] = useState(0);
   const [perPage, setPerPage] = useState(100);
   const [loading, setLoading] = useState(false);
 
   const { createModal } = useModal();
+  const { id } = useParams();
 
   const fetchData = useCallback(
     async (page, per_page) => {
       try {
         setLoading(true);
         const { data } = await api.get(
-          `${routes.shoppe}?page=${page}&limit=${per_page}`
+          `${routes.product}products-shoppe/${id}/?page=${page}&limit=${per_page}`
         );
 
-        setShoppes(data.results || []);
+        console.log(data);
+
+        setProducts(data.results || []);
         setTotalRows(data.count || 0);
       } catch (e) {
-        setProdutos([]);
+        setProducts([]);
         createModal({
           id: "confirm-get-erro-modal",
           Component: ModalError,
           props: {
             id: "confirm-get-erro",
             title: "Erro",
-            message: "Ops, aconteceu algum erro ao buscar as barracas",
+            message: "Ops, aconteceu algum erro ao buscar os produtos da banca",
             textConfirmButton: "Ok",
           },
         });
@@ -65,13 +69,13 @@ const Home = () => {
     <Container maxWidth="xl">
       <Toolbar>
         <Typography variant="h4" color="primary">
-          Home
+          Produtos
         </Typography>
       </Toolbar>
       <Box sx={{ marginTop: 4 }}>
-        {shoppes.map(shoppe => (
-          <Grid item key={String(shoppe.id)}>
-            <CustomCard shoppe={shoppe} />
+        {products.map(product => (
+          <Grid item key={String(product.id)}>
+            <CustomCardProduct product={product} />
           </Grid>
         ))}
       </Box>
@@ -79,4 +83,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default Produtos;

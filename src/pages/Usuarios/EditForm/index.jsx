@@ -62,8 +62,6 @@ function EditFormUsuario() {
   const [estados, setEstados] = useState([]);
   const [cidades, setCidades] = useState([]);
 
-  console.log(user.type_user);
-
   const { id } = useParams();
 
   const [loading, setLoading] = useState(true);

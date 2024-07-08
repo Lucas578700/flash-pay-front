@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const signUp = (fullname, email, password, cellphone, adress) => {
-    const usersStorage = JSON.parse(localStorage.getItem("users_bd"));
+    const usersStorage = JSON.parse(localStorage.getItem("@user"));
 
     const hasUser = usersStorage?.filter((user) => user.email === email);
 
@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }) => {
       newUser = [{ fullname, email, password, cellphone, adress }];
     }
 
-    localStorage.setItem("users_bd", JSON.stringify(newUser));
+    localStorage.setItem("@user", JSON.stringify(newUser));
 
     return;
   };

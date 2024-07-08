@@ -14,7 +14,6 @@ import { ModalError, ModalSuccess, useModal } from "src/components/Modals";
 import SelectComponent from "src/components/Select";
 import TextFieldComponent from "src/components/TextField";
 import { api, routes } from "src/services/api";
-import { cpfCnpjMask } from "src/functions/CnpjMask";
 
 import LinearLoader from "src/components/LinearProgres";
 
